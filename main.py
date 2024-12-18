@@ -33,12 +33,9 @@ Base = declarative_base()
 
 class Restaurant(Base):
     __tablename__ = 'restaurants'
-    
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    is_open = Column(Boolean)
-    timezone_id = Column(String(50))
-    phone = Column(String(20))
+    menuid = Column(Integer)
 
 class Customer(Base):
     __tablename__ = 'customers'
@@ -48,11 +45,15 @@ class Customer(Base):
     email = Column(String(255))
     mobile = Column(String(20))
     birth_date = Column(DateTime, nullable=True)
+    age = Column(Integer, nullable=True)
     is_email_marketing_allowed = Column(Boolean)
     is_sms_marketing_allowed = Column(Boolean)
     points = Column(Integer)
     status = Column(Integer)
     creation_date = Column(DateTime, nullable=True)
+    registration_date = Column(DateTime, nullable=True)
+    order_count = Column(Integer, nullable=True)
+
 
 class CustomerAddress(Base):
     __tablename__ = 'customer_addresses'
@@ -67,11 +68,12 @@ class CustomerAddress(Base):
     phone = Column(String(20))
     latitude = Column(Float)
     longitude = Column(Float)
-    status = Column(Integer)
+    BuildingNo = Column(String(255))
+
 
 class Order(Base):
     __tablename__ = 'orders'
-    
+
     id = Column(Integer, primary_key=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     customer_id = Column(Integer, ForeignKey('customers.id'))
@@ -86,6 +88,20 @@ class Order(Base):
     creation_date = Column(DateTime)
     payment_status = Column(Integer)
 
+    # Added missing fields
+    number_of_orders = Column(Integer)
+    phone = Column(String(15))
+    order_date = Column(DateTime, nullable=True)
+    promotion = Column(String(25), nullable=True)
+    line_item_discount = Column(Float, default=0)
+    discount = Column(Float, default=0)
+    card_surcharge = Column(Float, default=0)
+    delivery_option_type = Column(Integer, nullable=True)
+    tip = Column(Float, default=0)
+    used_points = Column(Integer, default=0)
+    total_paid = Column(Float, default=0)
+    total_balance = Column(Float, default=0)
+
 class Payment(Base):
     __tablename__ = 'payments'
     
@@ -95,9 +111,13 @@ class Payment(Base):
     payment_method_type = Column(Integer)
     extra_charge = Column(Float)
     sub_total = Column(Float)
+    discount = Column(Float, default=0)
+    tax = Column(Float, default=0)
     amount = Column(Float)
     status = Column(Integer)
+    tip = Column(Float, default=0)
     payment_method_name = Column(String(255))
+
 
 def create_database_tables():
     """Create all database tables if they don't exist."""
@@ -164,15 +184,11 @@ def sync_order_to_database(order_data: dict, session):
         restaurant = session.merge(Restaurant(
             id=data['Restaurant']['ID'],
             name=data['Restaurant']['Name'],
-            is_open=data['Restaurant']['IsOpen'],
-            timezone_id=data['Restaurant']['TimeZoneID'],
-            phone=data['Restaurant']['Phone']
+            menuid=data['Restaurant']['MenuID']
         ))
         
-        # Only insert customer if doesn't exist
-        customer = session.query(Customer).filter_by(id=data['Customer']['ID']).first()
-        if not customer:
-            customer = Customer(
+       
+        customer = session.merge(Customer(
             id=data['Customer']['ID'],
             full_name=data['Customer']['FullName'],
             email=data['Customer']['Email'],
@@ -182,9 +198,10 @@ def sync_order_to_database(order_data: dict, session):
             is_sms_marketing_allowed=data['Customer']['IsSmsMarketingAllowed'],
             points=data['Customer']['Points'],
             status=data['Customer']['Status'],
+            order_count = data.get('NumberOfOrders', None),
             creation_date=parse_date(data['Customer']['CreationDate'])
-            )
-            session.add(customer)
+            ))
+            
         
         # Create or update customer address
         if data['OrderMethod'] == 1: # Delivery
@@ -199,7 +216,6 @@ def sync_order_to_database(order_data: dict, session):
                 phone=data['CustomerAddress']['Phone'],
                 latitude=data['CustomerAddress']['Latitude'],
                 longitude=data['CustomerAddress']['Longitude'],
-                status=data['CustomerAddress']['Status']
             ))
             address = session.merge(CustomerAddress(
                 id=data['CustomerAddress']['ID'],
@@ -212,10 +228,9 @@ def sync_order_to_database(order_data: dict, session):
                 phone=data['CustomerAddress']['Phone'],
                 latitude=data['CustomerAddress']['Latitude'],
                 longitude=data['CustomerAddress']['Longitude'],
-                status=data['CustomerAddress']['Status']
+              
             ))
         
-        # Create or update order
         order = session.merge(Order(
             id=data['ID'],
             restaurant_id=data['Restaurant']['ID'],
@@ -229,22 +244,39 @@ def sync_order_to_database(order_data: dict, session):
             total=data['Total'],
             status=data['Status'],
             creation_date=parse_date(data['CreationDate']),
-            payment_status=data['PaymentStatus']
+            payment_status=data['PaymentStatus'],
+
+            # Added missing fields
+            number_of_orders=data.get('NumberOfOrders', None),
+            phone=data.get('Phone', None),
+            order_date=parse_date(data.get('OrderDate', None)),
+            promotion=data.get('Promotion', None),
+            line_item_discount=data.get('LineItemDiscount', 0),
+            discount=data.get('Discount', 0),
+            card_surcharge=data.get('CardSurcharge', 0),
+            delivery_option_type=data.get('DeliveryOptionType', None),
+            tip=data.get('Tip', 0),
+            used_points=data.get('UsedPoints', 0),
+            total_paid=data.get('TotalPaid', 0),
+            total_balance=data.get('TotalBalance', 0),
         ))
         
         # Create or update payments
         for payment_data in data['Payments']:
             payment = session.merge(Payment(
-                id=payment_data['ID'],
-                order_id=payment_data['OrderID'],
-                payment_method_id=payment_data['PaymentMethodID'],
-                payment_method_type=payment_data['PaymentMethodType'],
-                extra_charge=payment_data['ExtraCharge'],
-                sub_total=payment_data['SubTotal'],
-                amount=payment_data['Amount'],
-                status=payment_data['Status'],
-                payment_method_name=payment_data['PaymentMethodName']
-            ))
+            id=payment_data['ID'],
+            order_id=payment_data['OrderID'],
+            payment_method_id=payment_data['PaymentMethodID'],
+            payment_method_type=payment_data['PaymentMethodType'],
+            extra_charge=payment_data['ExtraCharge'],
+            sub_total=payment_data['SubTotal'],
+            discount=payment_data.get('Discount', 0),  # Default to 0 if not provided
+            tax=payment_data.get('Tax', 0),  # Default to 0 if not provided
+            tip=payment_data.get('Tip', 0),  # Default to 0 if not provided
+            amount=payment_data['Amount'],
+            status=payment_data['Status'],
+            payment_method_name=payment_data['PaymentMethodName']
+        ))
         
         session.commit()
         logger.info(f"Successfully synchronized order {data['ID']}")
@@ -266,7 +298,7 @@ def main(polling_interval: int = 300):
             
             # You might want to maintain a list of order IDs to poll
             # For now, we'll just use a sample order ID
-            order_id = 9487196
+            order_id = 9487213
             
             order_data = fetch_order_details(order_id)
             if order_data is None:
