@@ -174,3 +174,641 @@
 2024-12-18 17:56:37,298 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 17:56:36 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4107ce4f8d88b0-LHR', 'Content-Encoding': 'gzip'}
 2024-12-18 17:56:37,309 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
 2024-12-18 17:56:37,310 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:01:37,312 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:01:37,608 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:01:37,608 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:01:36 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f410f227c6fbd82-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:01:37,615 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:01:37,615 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:06:37,617 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:06:37,771 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:06:37,771 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:06:36 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4116774a5e8889-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:06:37,778 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:06:37,778 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:11:37,780 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:11:37,969 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:11:37,970 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:11:36 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f411dcb5bef6aac-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 18:11:37,983 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:11:37,985 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:16:37,987 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:16:38,267 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:16:38,268 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:16:37 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41251fbf11bf0a-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:16:38,278 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:16:38,278 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:21:38,279 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:21:38,760 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:21:38,760 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:21:37 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f412c749ac763ca-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:21:38,767 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:21:38,767 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:21:53,658 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:21:53,849 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 18:21:58,163 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'discount'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'tax'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'tip'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT payments.id AS payments_id, payments.order_id AS payments_order_id, payments.payment_method_id AS payments_payment_method_id, payments.payment_method_type AS payments_payment_method_type, payments.extra_charge AS payments_extra_charge, payments.sub_total AS payments_sub_total, payments.discount AS payments_discount, payments.tax AS payments_tax, payments.amount AS payments_amount, payments.status AS payments_status, payments.tip AS payments_tip, payments.payment_method_name AS payments_payment_method_name 
+FROM payments 
+WHERE payments.id = ?]
+[parameters: (1136550,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 18:21:58,166 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'discount'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'tax'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'tip'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT payments.id AS payments_id, payments.order_id AS payments_order_id, payments.payment_method_id AS payments_payment_method_id, payments.payment_method_type AS payments_payment_method_type, payments.extra_charge AS payments_extra_charge, payments.sub_total AS payments_sub_total, payments.discount AS payments_discount, payments.tax AS payments_tax, payments.amount AS payments_amount, payments.status AS payments_status, payments.tip AS payments_tip, payments.payment_method_name AS payments_payment_method_name 
+FROM payments 
+WHERE payments.id = ?]
+[parameters: (1136550,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 18:23:15,087 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:23:15,227 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 18:25:34,939 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:25:35,559 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 18:26:38,769 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:26:38,961 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:26:38,961 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:26:37 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4133ca9fdad188-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:26:38,968 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:26:38,968 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:26:54,328 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'payments'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT payments.id AS payments_id, payments.order_id AS payments_order_id, payments.payment_method_id AS payments_payment_method_id, payments.payment_method_type AS payments_payment_method_type, payments.extra_charge AS payments_extra_charge, payments.sub_total AS payments_sub_total, payments.discount AS payments_discount, payments.tax AS payments_tax, payments.amount AS payments_amount, payments.status AS payments_status, payments.tip AS payments_tip, payments.payment_method_name AS payments_payment_method_name 
+FROM payments 
+WHERE payments.id = ?]
+[parameters: (1136550,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 18:27:00,975 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:27:01,227 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 18:29:39,202 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 18:31:38,970 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:31:39,127 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:31:39,127 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:31:38 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f413b1edaf04164-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:31:39,145 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:31:39,145 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:36:39,146 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:36:39,405 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:36:39,405 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:36:38 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f414272e99bef4d-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:36:39,423 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:36:39,424 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:41:39,426 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:41:39,548 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:41:39,548 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:41:38 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4149c7aabdf668-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:41:39,556 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:41:39,556 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:46:39,566 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:46:39,723 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:46:39,723 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:46:38 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41511b8efbedf4-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:46:39,755 - __main__ - ERROR - Error syncing order to database: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 18:46:39,760 - __main__ - ERROR - Error in main loop: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 18:49:05,086 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:49:05,216 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 18:49:10,183 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 18:51:39,764 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:51:39,967 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:51:39,968 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:51:38 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41586fc8b5edea-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 18:51:40,004 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:51:40,005 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 18:56:40,006 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 18:56:40,313 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 18:56:40,313 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 18:56:39 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f415fc47980cc9a-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 18:56:40,338 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 18:56:40,338 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 19:01:40,339 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:01:40,548 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:01:40,548 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:01:39 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4167195bb9ede0-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:01:40,567 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 19:01:40,567 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 19:06:40,568 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:06:40,706 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:06:40,706 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:06:39 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f416e6dde01f64f-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:06:40,751 - __main__ - ERROR - Error syncing order to database: 'NoneType' object is not subscriptable
+2024-12-18 19:06:40,751 - __main__ - ERROR - Error in main loop: 'NoneType' object is not subscriptable
+2024-12-18 19:07:46,827 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:07:48,171 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:07:52,833 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 19:11:40,760 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:11:40,979 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:11:40,979 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:11:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4175c29a24b37c-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 19:11:40,989 - __main__ - ERROR - Error syncing order to database: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:11:40,998 - __main__ - ERROR - Error in main loop: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:15:49,327 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:15:49,484 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:15:49,565 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 19:16:41,000 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:16:41,261 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:16:41,261 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:16:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f417d167b2194aa-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:16:41,278 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:16:41,280 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:17:17,351 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:17:17,686 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:17:17,775 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 19:21:41,292 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:21:41,458 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:21:41,458 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:21:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41846b4911b10a-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 19:21:41,468 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:21:41,476 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:22:04,919 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:22:05,069 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487196&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:22:05,158 - __main__ - INFO - Successfully synchronized order 9487196
+2024-12-18 19:23:44,781 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:23:45,969 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:23:46,028 - __main__ - ERROR - Error syncing order to database: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:23:46,029 - __main__ - ERROR - Error in main loop: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:24:42,024 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:24:42,222 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:24:42,291 - __main__ - ERROR - Error syncing order to database: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:24:42,291 - __main__ - ERROR - Error in main loop: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:25:22,743 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:25:22,883 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:25:22,966 - __main__ - ERROR - Error syncing order to database: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:25:22,967 - __main__ - ERROR - Error in main loop: 'status' is an invalid keyword argument for CustomerAddress
+2024-12-18 19:26:41,482 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:26:41,587 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:26:41,587 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:26:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f418bbf6e13b390-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 19:26:41,591 - __main__ - ERROR - Error syncing order to database: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:26:41,593 - __main__ - ERROR - Error in main loop: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:27:49,146 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:27:49,403 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:27:52,717 - __main__ - INFO - Successfully synchronized order 9487213
+2024-12-18 19:31:41,595 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:31:41,731 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:31:41,731 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:31:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4193135c2fb34c-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 19:31:41,764 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:31:41,765 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:36:41,769 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:36:41,908 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:36:41,908 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:36:40 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f419a675e3571ed-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:36:41,915 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:36:41,917 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:41:41,920 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:41:42,029 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:41:42,029 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:41:41 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41a1bb3857b314-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 19:41:42,039 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:41:42,050 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:46:02,905 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:46:03,105 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:46:07,689 - __main__ - INFO - Successfully synchronized order 9487213
+2024-12-18 19:46:42,054 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:46:42,189 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:46:42,189 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:46:41 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41a90f2f00ef58-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:46:42,199 - __main__ - ERROR - Error syncing order to database: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:46:42,203 - __main__ - ERROR - Error in main loop: (pyodbc.OperationalError) ('08S01', '[08S01] [Microsoft][ODBC Driver 17 for SQL Server]Shared Memory Provider: No process is on the other end of the pipe.\r\n (233) (SQLExecDirectW); [08S01] [Microsoft][ODBC Driver 17 for SQL Server]Communication link failure (233)')
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-12-18 19:51:07,692 - __main__ - INFO - Attempting to fetch order 9487213 from API
+2024-12-18 19:51:07,858 - __main__ - INFO - API Response URL: https://api.restajet.com/admin_v1/order/Detail?ID=9487213&SessionToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiI1NDc3IiwiQ29tcGFueUlEIjoiMjkyMCIsImV4cCI6MTc2NjA1MDI5MX0.pRCk4CfcozQlL-ApU8CcBd_z1sHuI9eEoYVM0pY7mLc
+2024-12-18 19:51:07,878 - __main__ - INFO - Successfully synchronized order 9487213
+2024-12-18 19:51:42,210 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:51:42,978 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:51:42,978 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:51:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41b0630afbef40-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:51:43,010 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:51:43,012 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:56:43,018 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 19:56:43,291 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 19:56:43,293 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 19:56:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41b7bb3876f668-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 19:56:43,301 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 19:56:43,303 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:01:43,306 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:01:43,436 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:01:43,436 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:01:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41bf0feda3ef35-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:01:43,446 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:01:43,453 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:06:43,458 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:06:43,615 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:06:43,615 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:06:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41c663fa5993d9-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:06:43,625 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:06:43,634 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:11:43,644 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:11:43,781 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:11:43,781 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:11:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41cdb81e5c48c9-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:11:43,781 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:11:43,793 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:16:43,802 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:16:43,912 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:16:43,912 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:16:42 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41d50c0f5f074f-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 20:16:43,922 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:16:43,922 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:21:43,934 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:21:44,072 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:21:44,072 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:21:43 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41dc5ff9319490-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:21:44,082 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:21:44,093 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:26:44,104 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:26:44,353 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:26:44,363 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:26:43 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41e3b41ea7ef3a-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:26:44,373 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:26:44,378 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:31:44,382 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:31:44,516 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:31:44,516 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:31:43 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41eb08b8b663e5-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:31:44,532 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:31:44,537 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:36:44,548 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:36:44,687 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:36:44,687 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:36:43 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41f25cc8cbed04-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:36:44,687 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:36:44,698 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:41:44,701 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:41:44,853 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:41:44,854 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:41:43 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f41f9b0cf056537-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:41:44,864 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:41:44,868 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:46:44,871 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:46:45,077 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:46:45,079 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:46:44 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f420104d9a079c8-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:46:45,087 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:46:45,088 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:51:45,105 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:51:45,255 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:51:45,255 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:51:44 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4208595905bd80-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 20:51:45,268 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:51:45,272 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:56:45,275 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 20:56:45,413 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 20:56:45,413 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 20:56:44 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f420fad6f61b13d-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 20:56:45,418 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 20:56:45,419 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:01:45,422 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:01:45,546 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:01:45,546 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:01:44 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f42170128faeb18-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 21:01:45,556 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:01:45,562 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:06:45,569 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:06:45,991 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:06:45,991 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:06:45 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f421e56cfe96aa9-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 21:06:45,991 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:06:46,004 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:11:46,007 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:11:46,212 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:11:46,213 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:11:45 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4225aafdcdbd7d-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:11:46,217 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:11:46,219 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:16:46,221 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:16:47,608 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:16:47,608 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:16:46 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f422cff4cfbe906-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:16:47,618 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:16:47,620 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:21:47,622 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:21:47,825 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:21:47,825 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:21:46 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f42345b4a009514-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:21:47,836 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:21:47,843 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:26:47,850 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:26:47,980 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:26:47,980 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:26:47 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f423baf6b60e8fa-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:26:47,980 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:26:47,987 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:31:47,991 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:31:48,219 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:31:48,219 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:31:47 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f42430348312213-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 21:31:48,231 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:31:48,234 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:36:48,237 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:36:48,353 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:36:48,353 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:36:47 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f424a57da956aae-MAN', 'Content-Encoding': 'gzip'}
+2024-12-18 21:36:48,356 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:36:48,359 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:41:48,361 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:41:48,638 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:41:48,639 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:41:47 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4251ac6a75be9f-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:41:48,641 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:41:48,641 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:46:48,656 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:46:48,805 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:46:48,805 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:46:47 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f4259008a686551-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:46:48,805 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:46:48,813 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:51:48,825 - __main__ - INFO - Attempting to fetch order 9487196 from API
+2024-12-18 21:51:48,994 - __main__ - INFO - API Response Status Code: 200
+2024-12-18 21:51:48,994 - __main__ - INFO - API Response Headers: {'Date': 'Wed, 18 Dec 2024 21:51:48 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'PUT, GET, POST, OPTIONS, DELETE, PATCH', 'Access-Control-Allow-Headers': 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Access-Control-Allow-Origin', 'Access-Control-Max-Age': '1728000', 'cf-cache-status': 'DYNAMIC', 'Server': 'cloudflare', 'CF-RAY': '8f426054ac4360ef-LHR', 'Content-Encoding': 'gzip'}
+2024-12-18 21:51:49,008 - __main__ - ERROR - Error syncing order to database: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2024-12-18 21:51:49,013 - __main__ - ERROR - Error in main loop: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'is_open'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'timezone_id'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid column name 'phone'. (207); [42S22] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT restaurants.id AS restaurants_id, restaurants.name AS restaurants_name, restaurants.is_open AS restaurants_is_open, restaurants.timezone_id AS restaurants_timezone_id, restaurants.phone AS restaurants_phone 
+FROM restaurants 
+WHERE restaurants.id = ?]
+[parameters: (5139,)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
