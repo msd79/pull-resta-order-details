@@ -85,6 +85,23 @@ class CustomerAddress(Base):
     BuildingNo = Column(String(255))
 
 
+class Promotion(Base):
+    __tablename__ = 'promotions'
+
+    id = Column(Integer, primary_key=True)
+    companyID = Column(Integer)
+    externalID = Column(Integer, nullable=True)
+    promotionType = Column(Integer)
+    benefitType = Column(Integer)
+    name = Column(String(255))
+    description = Column(String(255))
+    oncePerCustomer = Column(Boolean)
+    onlyFirstOrder = Column(Boolean)
+    minSubTotal = Column(Float)
+    discountType = Column(Integer)
+    discountAmount = Column(Float)
+    couponCode = Column(String(255), nullable=True)
+
 class Order(Base):
     __tablename__ = 'orders'
 
@@ -104,7 +121,7 @@ class Order(Base):
     number_of_orders = Column(Integer)
     phone = Column(String(15))
     order_date = Column(DateTime, nullable=True)
-    promotion = Column(String(25), nullable=True)
+    promotion_id = Column(Integer, ForeignKey('promotions.id'), nullable=True)
     line_item_discount = Column(Float, default=0)
     discount = Column(Float, default=0)
     card_surcharge = Column(Float, default=0)
@@ -142,18 +159,20 @@ def get_last_page_index(session: Session, company_id: int, company_name: str) ->
     """Get or create the last processed page index for a company"""
     try:
         tracker = session.query(PageIndexTracker).filter_by(company_id=company_id).one()
-        return tracker.last_page_index
+        if tracker.last_page_index == 1:
+            return 1
+        return tracker.last_page_index - 1
     except NoResultFound:
         # Create new tracker if doesn't exist
         new_tracker = PageIndexTracker(
             company_id=company_id,
             company_name=company_name,
-            last_page_index=2,
+            last_page_index=1,
             last_updated=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         )
         session.add(new_tracker)
         session.commit()
-        return 0
+        return 1
 
 def update_page_index(session: Session, company_id: int, page_index: int):
     """Update the last processed page index for a company"""
@@ -196,6 +215,22 @@ def sync_order_to_database(order_data: dict, session):
             status=data['Customer']['Status'],
             order_count = data.get('NumberOfOrders', None),
             creation_date=parse_date(data['Customer']['CreationDate'])
+            ))
+        if data['Promotion'] is not None:   
+            promotion = session.merge(Promotion(
+                id=data['Promotion']['ID'],
+                companyID=data['Promotion']['CompanyID'],
+                externalID=data['Promotion']['ExternalID'],
+                promotionType=data['Promotion']['PromotionType'],
+                benefitType=data['Promotion']['BenefitType'],
+                name=data['Promotion']['Name'],
+                description=data['Promotion']['Description'],
+                oncePerCustomer=data['Promotion']['OncePerCustomer'],
+                onlyFirstOrder=data['Promotion']['OnlyFirstOrder'],
+                minSubTotal=data['Promotion']['MinSubTotal'],
+                discountType=data['Promotion']['DiscountType'],
+                discountAmount=data['Promotion']['DiscountAmount'],
+                couponCode=data['Promotion']['CouponCode']
             ))
             
         
@@ -244,7 +279,7 @@ def sync_order_to_database(order_data: dict, session):
             number_of_orders=data.get('NumberOfOrders', None),
             phone=data.get('Phone', None),
             order_date=parse_date(data.get('OrderDate', None)),
-            promotion=data.get('Promotion', None),
+            promotion_id=data['Promotion']['ID'] if data['Promotion'] != None else None,
             line_item_discount=data.get('LineItemDiscount', 0),
             discount=data.get('Discount', 0),
             delivery_option_type=data.get('DeliveryOptionType', None),
@@ -437,19 +472,19 @@ def main(polling_interval: int = 300):
             session = Session()
             
             # Login and get session token and company_id
-            print(f"\nProcessing restaurant: {restaurant['Name']}")
+            #print(f"\nProcessing restaurant: {restaurant['Name']}")
             session_token, company_id = api.login(restaurant['Username'], restaurant['Password'])
-            print(f"Successfully logged in. Company ID: {company_id}")
-            print(f"Session Token: {session_token}")
+            #print(f"Successfully logged in. Company ID: {company_id}")
+            #print(f"Session Token: {session_token}")
 
-            page_index = get_last_page_index(session, company_id, restaurant['Name']) - 1
+            page_index = get_last_page_index(session, company_id, restaurant['Name'])
+            #page_index = 4
             print(f"Starting from page {page_index}")
 
             # Poll for orders
-            page_index = 1
             while True:
                 print(f"Fetching page {page_index}...")
-                response_data = api.get_orders(page_index)
+                response_data = api.get_orders_list(page_index)
                 
                 if not response_data.get('Data'):
                     print("No more data to fetch.")
@@ -458,6 +493,8 @@ def main(polling_interval: int = 300):
                 for order in response_data['Data']:
                     print(f"Processing order: {order['ID']}")
                     order_data = api.fetch_order_details(order['ID'])
+                    #order_data = api.fetch_order_details(1490186)
+                    #1490186
                     if order_data is None:
                         logger.error(f"Failed to fetch order details for order {order['ID']}")
                         continue
@@ -470,6 +507,7 @@ def main(polling_interval: int = 300):
                         sync_order_to_database(order_data, session)
                     else:
                         logger.error(f"API returned error code: {order_data['ErrorCode']}, Message: {order_data.get('Message', 'No message')}")
+                    time.sleep(1)
                 #insert_data(response_data['Data'], company_id)
                 update_page_index(session, company_id, page_index)
                 page_index += 1
