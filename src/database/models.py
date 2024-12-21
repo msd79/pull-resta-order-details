@@ -1,7 +1,22 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import declarative_base, relationship
+from datetime import datetime
 
 Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'restaurant_users'
+    
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50), unique=True, nullable=False)
+    password = Column(LargeBinary, nullable=False)
+    company_id = Column(Integer, nullable=True)
+    restaurant_id = Column(Integer)
+    company_name = Column(String(128))
+    created_at = Column(DateTime, default=datetime.now)
+    last_updated = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    active = Column(Boolean)
+
 
 class Restaurant(Base):
     __tablename__ = 'restaurants'

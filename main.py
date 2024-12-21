@@ -7,11 +7,14 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 
-from config.settings import get_config, RestaurantConfig
+from config.settings import get_config
 from src.database.database import DatabaseManager
 from src.api.client import RestaAPI
+from src.database.models import User
+from src.services.credential_manager import CredentialManagerService
 from src.services.order_sync import OrderSyncService
 from src.services.page_tracker import PageTrackerService
+from src.services.schedule_manager import ScheduleManager
 from src.utils.logging_config import setup_logging
 from src.utils.retry import retry_with_backoff
 from src.utils.validation import ValidationUtils
@@ -23,6 +26,8 @@ class ApplicationServices:
     api_client: RestaAPI
     sync_service: OrderSyncService
     page_tracker: PageTrackerService
+    credential_manager: CredentialManagerService
+    schedule_manager: ScheduleManager
 
 class ApplicationState:
     """Manages application state and lifecycle"""
@@ -54,34 +59,43 @@ class OrderSyncApplication:
         signal.signal(signal.SIGTERM, signal_handler)
 
     async def _initialize_services(self) -> ApplicationServices:
-        """Initialize all application services"""
-        try:
-            # Initialize database
-            db_manager = DatabaseManager(self.config.database.connection_string)
-            db_manager.create_tables()
+            """Initialize all application services"""
+            try:
+                # Previous initialization code remains the same
+                db_manager = DatabaseManager(self.config.database.connection_string)
+                db_manager.create_tables()
 
-            # Initialize API client
-            api_client = RestaAPI(
-                base_url=self.config.api.base_url,
-                page_size=self.config.api.page_size
-            )
+                api_client = RestaAPI(
+                    base_url=self.config.api.base_url,
+                    page_size=self.config.api.page_size
+                )
 
-            # Initialize other services
-            db_session = db_manager.get_session()
-            sync_service = OrderSyncService(db_session)
-            page_tracker = PageTrackerService(db_session)
+                db_session = db_manager.get_session()
+                sync_service = OrderSyncService(db_session)
+                page_tracker = PageTrackerService(db_session)
+                credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
+                
+                # Initialize schedule manager with config values
+                schedule_manager = ScheduleManager(
+                    start_hour=self.config.schedule.start_hour,
+                    start_minute=self.config.schedule.start_minute,
+                    end_hour=self.config.schedule.end_hour,
+                    end_minute=self.config.schedule.end_minute,
+                    active_days=self.config.schedule.active_days
+                )
 
-            return ApplicationServices(
-                db_manager=db_manager,
-                api_client=api_client,
-                sync_service=sync_service,
-                page_tracker=page_tracker
-            )
+                return ApplicationServices(
+                    db_manager=db_manager,
+                    api_client=api_client,
+                    sync_service=sync_service,
+                    page_tracker=page_tracker,
+                    credential_manager=credential_manager,
+                    schedule_manager=schedule_manager
+                )
 
-        except Exception as e:
-            self.logger.error(f"Failed to initialize services: {str(e)}")
-            raise
-
+            except Exception as e:
+                self.logger.error(f"Failed to initialize services: {str(e)}")
+                raise
     @asynccontextmanager
     async def _service_context(self):
         """Context manager for application services"""
@@ -100,6 +114,7 @@ class OrderSyncApplication:
                 services.sync_service.close()
                 services.page_tracker.close()
                 services.db_manager.close()
+                services.creadential_manager.close()
             except Exception as e:
                 self.logger.error(f"Error during service cleanup: {str(e)}")
 
@@ -122,7 +137,6 @@ class OrderSyncApplication:
 
     async def _process_restaurant_page(
         self,
-        restaurant: RestaurantConfig,
         current_page: int,
         services: ApplicationServices
     ) -> bool:
@@ -149,27 +163,32 @@ class OrderSyncApplication:
             self.logger.error(f"Error processing page {current_page}: {str(e)}")
             return False
 
-    async def _process_restaurant(self, restaurant: RestaurantConfig, services: ApplicationServices):
+    async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
         """Process orders for a single restaurant"""
-        self.logger.info(f"Processing orders for restaurant: {restaurant.name}")
+        self.logger.info(f"Processing orders for restaurant: {restaurant_user.restaurant_id}")
         try:
+            
+            #creadentials = self.services.creadential_manager.get_credentials_by_restaurant(restaurant.id)
+            credentials = services.credential_manager.get_credential_by_restaurant(restaurant_user.restaurant_id)
+            if not credentials:
+                self.logger.error(f"No credentials found for restaurant {restaurant_user.name}")
+                return
+            
             # Login with restaurant credentials
             session_token, company_id = await services.api_client.login(
-                email=restaurant.username,
-                password=restaurant.password
+                email=credentials.get('username'),
+                password=credentials.get('password')
             )
 
             current_page = services.page_tracker.get_last_page_index(
                 company_id=company_id,
-                company_name=restaurant.name
+                company_name=restaurant_user.company_name
             )
-
-            #self.logger.info(f"Current page index {current_page}")
 
             while self.state.is_running:
                 self.logger.info(f"Current page index {current_page}")
                 has_more_pages = await self._process_restaurant_page(
-                    restaurant, current_page, services
+                    current_page, services
                 )
                 
                 if not has_more_pages:
@@ -190,7 +209,7 @@ class OrderSyncApplication:
             # Load configuration
             self.logger.debug("Loading configuration...")
             self.config = get_config()
-            self.logger.debug("Configuration loaded successfully")
+        
 
             # Setup logging
             self.logger.debug("Setting up logging...")
@@ -198,12 +217,12 @@ class OrderSyncApplication:
                 log_dir=self.config.logging.filename,  # Updated to use correct path
                 log_level=getattr(logging, self.config.logging.level)  # Convert string to log level
             )
-            self.logger.debug("Logging setup completed")
+            
 
             # Setup signal handlers
             self.logger.debug("Setting up signal handlers...")
             self._setup_signal_handlers()
-            self.logger.debug("Signal handlers setup completed")
+
 
             self.logger.info("Application initialized successfully")
             return True
@@ -215,32 +234,54 @@ class OrderSyncApplication:
             return False
 
     async def run(self):
-        """Main application loop"""
-        if not await self.initialize():
-            self.logger.error("Failed to initialize application. Exiting.")
-            return
+            """Main application loop"""
+            if not await self.initialize():
+                self.logger.error("Failed to initialize application. Exiting.")
+                return
 
-        self.logger.info("Starting order synchronization process...")
+            self.logger.info("Starting order synchronization process...")
 
-        async with self._service_context() as services:
-            while self.state.is_running:
-                try:
-                    # Process restaurants sequentially
-                    for restaurant in self.config.restaurants:
-                        if not self.state.is_running:
-                            break
-                        await self._process_restaurant(restaurant, services)
+            async with self._service_context() as services:
+                # Check if we should start immediately
+                if not services.schedule_manager.should_start_immediately():
+                    wait_time = services.schedule_manager.time_until_next_window()
+                    self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
+                    await asyncio.sleep(min(wait_time, 3600))  # Sleep for wait_time or 1 hour, whichever is shorter
+                else:
+                    self.logger.info("Within scheduled window - starting immediately")
 
-                    if self.state.is_running:
-                        self.logger.info("Completed sync cycle. Waiting before next cycle...")
-                        await asyncio.sleep(self.config.polling_interval)
+                while self.state.is_running:
+                    try:
+                        # Check if we're within the scheduled running window
+                        if not services.schedule_manager.is_within_schedule():
+                            wait_time = services.schedule_manager.time_until_next_window()
+                            self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
+                            await asyncio.sleep(min(wait_time, 3600))  # Sleep for wait_time or 1 hour, whichever is shorter
+                            continue
 
-                except Exception as e:
-                    self.logger.error(f"Error in main sync loop: {str(e)}")
-                    await asyncio.sleep(self.config.request_delay * 10)
+                        # Rest of the original run loop
+                        services.credential_manager.import_credentials_from_yaml()
+                        restaurant_users = services.credential_manager.list_credentials()
+                        
+                        for restaurant_user in restaurant_users:
+                            if not self.state.is_running:
+                                break
+                            
+                            # Check schedule again before processing each restaurant
+                            if not services.schedule_manager.is_within_schedule():
+                                break
+                                
+                            await self._process_restaurant(restaurant_user, services)
 
-        self.logger.info("Application shutdown complete")
+                        if self.state.is_running:
+                            self.logger.info("Completed sync cycle. Waiting before next cycle...")
+                            await asyncio.sleep(self.config.polling_interval)
 
+                    except Exception as e:
+                        self.logger.error(f"Error in main sync loop: {str(e)}")
+                        await asyncio.sleep(self.config.request_delay * 10)
+
+            self.logger.info("Application shutdown complete")
 def main():
     """Application entry point"""
     try:

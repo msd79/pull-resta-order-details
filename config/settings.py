@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass
@@ -23,12 +24,20 @@ class DatabaseConfig:
     server: str
     database: str
     username: str
-    password: str
     driver: str
+
+    @property
+    def password(self) -> str:
+        return os.getenv('DB_PASSWORD')
+    
+    @property
+    def passphrase(self) -> str:
+        return os.getenv('DB_PASSPHRASE')
 
     @property
     def connection_string(self) -> str:
         return f"mssql+pyodbc://{self.username}:{self.password}@{self.server}/{self.database}?driver={self.driver}"
+
 
 @dataclass
 class LoggingConfig:
@@ -45,12 +54,30 @@ class SyncConfig:
     delay_between_orders: float
     delay_between_pages: float
     delay_on_error: float
-
 @dataclass
-class RestaurantConfig:
-    name: str
-    username: str
-    password: str
+class ScheduleConfig:
+    """Configuration for application running schedule"""
+    start_hour: int
+    start_minute: int
+    end_hour: int
+    end_minute: int
+    active_days: List[str]
+
+    def __post_init__(self):
+        """Validate schedule configuration"""
+        if not 0 <= self.start_hour <= 23:
+            raise ValueError(f"Invalid start_hour: {self.start_hour}")
+        if not 0 <= self.end_hour <= 23:
+            raise ValueError(f"Invalid end_hour: {self.end_hour}")
+        if not 0 <= self.start_minute <= 59:
+            raise ValueError(f"Invalid start_minute: {self.start_minute}")
+        if not 0 <= self.end_minute <= 59:
+            raise ValueError(f"Invalid end_minute: {self.end_minute}")
+        
+        valid_days = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'}
+        for day in self.active_days:
+            if day not in valid_days:
+                raise ValueError(f"Invalid day: {day}. Must be one of {valid_days}")
 
 @dataclass
 class Config:
@@ -58,29 +85,14 @@ class Config:
     database: DatabaseConfig
     logging: LoggingConfig
     sync: SyncConfig
-    restaurants: List[RestaurantConfig]
-    
-    # Add properties to expose sync configuration at top level
-    @property
-    def polling_interval(self) -> int:
-        return self.sync.polling_interval
-    
-    @property
-    def request_delay(self) -> float:
-        return self.sync.request_delay
-    
-    @property
-    def max_retries(self) -> int:
-        return self.sync.max_retries
-    
-    @property
-    def log_filename(self) -> str:
-        return self.logging.filename
+    schedule: ScheduleConfig  # New field
+   
+    # ... (existing properties remain the same)
     
     @classmethod
     def load(cls, config_path: Optional[Path] = None) -> 'Config':
         if config_path is None:
-            current_dir = Path(__file__).parent.parent  # Move up one directory since settings.py is in config/
+            current_dir = Path(__file__).parent.parent
             config_path = current_dir / 'config' / 'config.yaml'
             
         if not config_path.exists():
@@ -107,7 +119,13 @@ class Config:
                     delay_between_pages=data['sync']['delay_between_pages'],
                     delay_on_error=data['sync']['delay_on_error']
                 ),
-                restaurants=[RestaurantConfig(**r) for r in data['restaurants']]
+                schedule=ScheduleConfig(
+                    start_hour=data['schedule']['start_hour'],
+                    start_minute=data['schedule']['start_minute'],
+                    end_hour=data['schedule']['end_hour'],
+                    end_minute=data['schedule']['end_minute'],
+                    active_days=data['schedule']['active_days']
+                )
             )
         except Exception as e:
             logger.error(f"Error loading config: {str(e)}")
@@ -122,7 +140,6 @@ def get_config(config_path: Optional[Path] = None) -> Config:
     try:
         if _config is None:
             logger.debug("Loading configuration...")
-            # Fix: Correct variable assignment
             _config = Config.load(config_path)
             logger.debug("Configuration loaded successfully")
         return _config

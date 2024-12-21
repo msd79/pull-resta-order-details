@@ -10,8 +10,11 @@
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
-            // "python": "${command:python.interpreterPath}"
-            "python": "venv\\Scripts\\python.exe"
+            "python": "venv\\Scripts\\python.exe",
+            "env": {
+                "DB_PASSWORD": "qwerty",
+                "DB_PASSPHRASE": "your_passphrase_here",
+            }
         }
     ]
 }
