@@ -7,7 +7,6 @@ database:
   server: "localhost\\SQLEXPRESS"
   database: "RestaOrders1"
   username: "sa"
-  password: "qwerty"
   driver: "ODBC+Driver+17+for+SQL+Server"
 
 logging:
@@ -17,14 +16,23 @@ logging:
   backup_count: 5
 
 sync:
-  polling_interval: 300  # Fixed typo: changed from polling_internval
+  polling_interval: 3  # 5 minutes
   request_delay: 1.0
   max_retries: 3
-  delay_between_orders: 1
-  delay_between_pages: 1
-  delay_on_error: 5
+  delay_between_orders: 0.5
+  delay_between_pages: 0.5
+  delay_on_error: 5.0
 
-restaurants:
-  - name: "ProposUK"
-    username: "msd79@outlook.com"
-    password: "qwerty"
+schedule:
+  # Run from 9:00 AM to 5:00 PM on weekdays
+  start_hour: 11
+  start_minute: 0
+  end_hour: 17
+  end_minute: 0
+  active_days:
+    - MONDAY
+    - TUESDAY
+    - WEDNESDAY
+    - THURSDAY
+    - FRIDAY
+    - SATURDAY

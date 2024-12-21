@@ -93,7 +93,7 @@ class Config:
     def load(cls, config_path: Optional[Path] = None) -> 'Config':
         if config_path is None:
             current_dir = Path(__file__).parent.parent
-            config_path = current_dir / 'config' / 'config.yaml'
+            config_path = current_dir /'config.yaml'
             
         if not config_path.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
