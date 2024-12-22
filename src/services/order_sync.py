@@ -107,11 +107,23 @@ class OrderSyncService:
     def _sync_promotion(self, promotion_data: dict) -> Promotion:
         """Sync promotion data to database."""
         try:
+            # Always set externalID to 0 if it's a string that contains text
+            if isinstance(promotion_data['ExternalID'], str) and not promotion_data['ExternalID'].isdigit():
+                external_id = 0
+            else:
+                # Only try to convert if it might be a number
+                try:
+                    external_id = int(promotion_data['ExternalID']) if promotion_data['ExternalID'] else 0
+                except (ValueError, TypeError):
+                    external_id = 0
+            
+            self.logger.debug(f"Converting ExternalID '{promotion_data['ExternalID']}' to {external_id}")
+            
             promotion = self.session.merge(
                 Promotion(
                     id=promotion_data['ID'],
                     companyID=promotion_data['CompanyID'],
-                    externalID=promotion_data['ExternalID'],
+                    externalID=external_id,  # Will be 0 for any non-numeric value
                     promotionType=promotion_data['PromotionType'],
                     benefitType=promotion_data['BenefitType'],
                     name=promotion_data['Name'],

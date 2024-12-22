@@ -25,6 +25,7 @@ class DatabaseConfig:
     database: str
     username: str
     driver: str
+    port: int = 1433
 
     @property
     def password(self) -> str:
@@ -36,7 +37,31 @@ class DatabaseConfig:
 
     @property
     def connection_string(self) -> str:
-        return f"mssql+pyodbc://{self.username}:{self.password}@{self.server}/{self.database}?driver={self.driver}"
+        """
+        Creates a SQLAlchemy connection string with proper encoding for special characters.
+        """
+        from urllib.parse import quote_plus
+        
+        # Handle server name with instance
+        server = self.server.replace('\\', '\\\\')
+        
+        # URL encode the driver and password
+        encoded_driver = quote_plus(self.driver)
+        encoded_password = quote_plus(self.password) if self.password else ''
+        
+        #return f"mssql+pyodbc://{self.username}:{encoded_password}@{server}/{self.database}?driver={encoded_driver}"
+   
+        server_with_port = f"{server}:{self.port}"
+        
+        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.database}?driver={encoded_driver}"
+
+    @staticmethod
+    def get_available_drivers() -> list:
+        """
+        Returns a list of available ODBC drivers on the system.
+        """
+        import pyodbc
+        return pyodbc.drivers()
 
 
 @dataclass
@@ -92,8 +117,8 @@ class Config:
     @classmethod
     def load(cls, config_path: Optional[Path] = None) -> 'Config':
         if config_path is None:
-            current_dir = Path(__file__).parent.parent
-            config_path = current_dir /'config.yaml'
+            root_dir = Path(__file__).parent.parent.parent  # Adjust as needed for your project structure
+            config_path = root_dir / 'config' / 'config.yaml'
             
         if not config_path.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")

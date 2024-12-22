@@ -13,7 +13,7 @@
             "python": "venv\\Scripts\\python.exe",
             "env": {
                 "DB_PASSWORD": "qwerty",
-                "DB_PASSPHRASE": "your_passphrase_here",
+                "DB_PASSPHRASE": "*******",
             }
         }
     ]

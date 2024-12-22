@@ -4,10 +4,10 @@ api:
   request_timeout: 30
 
 database:
-  server: "localhost\\SQLEXPRESS"
+  server: "192.168.0.11\\SQLEXPRESS"
   database: "RestaOrders1"
   username: "sa"
-  driver: "ODBC+Driver+17+for+SQL+Server"
+  driver: "ODBC Driver 17 for SQL Server"
 
 logging:
   filename: "order_sync.log"
@@ -16,7 +16,7 @@ logging:
   backup_count: 5
 
 sync:
-  polling_interval: 3  # 5 minutes
+  polling_interval: 3000  # 5 minutes
   request_delay: 1.0
   max_retries: 3
   delay_between_orders: 0.5
@@ -25,9 +25,9 @@ sync:
 
 schedule:
   # Run from 9:00 AM to 5:00 PM on weekdays
-  start_hour: 11
+  start_hour: 1
   start_minute: 0
-  end_hour: 17
+  end_hour: 16
   end_minute: 0
   active_days:
     - MONDAY
@@ -36,3 +36,4 @@ schedule:
     - THURSDAY
     - FRIDAY
     - SATURDAY
+    - SUNDAY

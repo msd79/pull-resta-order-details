@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 
-from config.settings import get_config
+from src.config.settings import get_config
 from src.database.database import DatabaseManager
 from src.api.client import RestaAPI
 from src.database.models import User
@@ -74,6 +74,8 @@ class OrderSyncApplication:
                 sync_service = OrderSyncService(db_session)
                 page_tracker = PageTrackerService(db_session)
                 credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
+
+                credential_manager.import_credentials_from_yaml()
                 
                 # Initialize schedule manager with config values
                 schedule_manager = ScheduleManager(
@@ -141,6 +143,7 @@ class OrderSyncApplication:
         services: ApplicationServices
     ) -> bool:
         """Process a single page of restaurant orders"""
+        self.logger.debug("process_restaurant_page...")
         try:
             orders_response = await services.api_client.get_orders_list(current_page)
             
@@ -170,6 +173,7 @@ class OrderSyncApplication:
             
             #creadentials = self.services.creadential_manager.get_credentials_by_restaurant(restaurant.id)
             credentials = services.credential_manager.get_credential_by_restaurant(restaurant_user.restaurant_id)
+            self.logger.debug(f"Credentials: {credentials}")
             if not credentials:
                 self.logger.error(f"No credentials found for restaurant {restaurant_user.name}")
                 return
@@ -179,27 +183,28 @@ class OrderSyncApplication:
                 email=credentials.get('username'),
                 password=credentials.get('password')
             )
-
+            
             current_page = services.page_tracker.get_last_page_index(
                 company_id=company_id,
                 company_name=restaurant_user.company_name
             )
 
             while self.state.is_running:
-                self.logger.info(f"Current page index {current_page}")
+                self.logger.info(f"Current page index for {restaurant_user.company_name} - {current_page}")
+                
                 has_more_pages = await self._process_restaurant_page(
                     current_page, services
                 )
                 
                 if not has_more_pages:
                     break
-
+                
                 services.page_tracker.update_page_index(company_id, current_page)
                 current_page += 1
                 await asyncio.sleep(self.config.sync.delay_between_pages)
 
         except Exception as e:
-            self.logger.error(f"Error processing restaurant {restaurant.name}: {str(e)}")
+            self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
 
     async def initialize(self) -> bool:
         """Initialize application configuration and logging"""
@@ -223,6 +228,8 @@ class OrderSyncApplication:
             self.logger.debug("Setting up signal handlers...")
             self._setup_signal_handlers()
 
+            
+
 
             self.logger.info("Application initialized successfully")
             return True
@@ -240,6 +247,9 @@ class OrderSyncApplication:
                 return
 
             self.logger.info("Starting order synchronization process...")
+
+            #import credentials from yaml
+            
 
             async with self._service_context() as services:
                 # Check if we should start immediately
@@ -275,11 +285,11 @@ class OrderSyncApplication:
 
                         if self.state.is_running:
                             self.logger.info("Completed sync cycle. Waiting before next cycle...")
-                            await asyncio.sleep(self.config.polling_interval)
+                            await asyncio.sleep(self.config.sync.polling_interval)
 
                     except Exception as e:
                         self.logger.error(f"Error in main sync loop: {str(e)}")
-                        await asyncio.sleep(self.config.request_delay * 10)
+                        await asyncio.sleep(self.config.sync.delay_on_error)
 
             self.logger.info("Application shutdown complete")
 def main():

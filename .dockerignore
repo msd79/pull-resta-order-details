@@ -1,0 +1,25 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+
+# Logs
+order_sync.log/
+order_sync.log/*
+*.log
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# Credentials (to prevent accidental inclusion)
+creds_example.yaml

@@ -65,6 +65,7 @@ class RestaAPI:
                 
                 self.session_token = data.get('SessionToken')
                 if not self.session_token:
+                    self.logger.error("Session token not found in response:", data)
                     raise Exception("Session token not found in response")
                 
                 # First try to get company_id from token

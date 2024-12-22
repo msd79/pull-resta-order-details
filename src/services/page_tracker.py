@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
@@ -10,12 +11,14 @@ from src.database.models import PageIndexTracker
 class PageTrackerService:
     def __init__(self, session: Session):
         self.session = session
+        self.logger = logging.getLogger(__name__)
 
     def get_last_page_index(self, company_id: int, company_name: str) -> int:
         """
         Get the last processed page index for a company.
         Creates a new tracker if one doesn't exist.
         """
+        self.logger.debug("get_last_page_index...")
         try:
             tracker = self.session.query(PageIndexTracker).filter_by(
                 company_id=company_id
@@ -40,6 +43,7 @@ class PageTrackerService:
 
     def update_page_index(self, company_id: int, page_index: int) -> None:
         """Update the last processed page index for a company"""
+        self.logger.debug("update_page_index...")
         try:
             tracker = self.session.query(PageIndexTracker).filter_by(
                 company_id=company_id

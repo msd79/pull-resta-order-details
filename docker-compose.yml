@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  order_sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config:/app/config
+      - ./order_sync.log:/app/order_sync.log
+      - ./creds:/app/creds
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PASSPHRASE=${DB_PASSPHRASE}
+    restart: unless-stopped
+    network_mode: "host"
