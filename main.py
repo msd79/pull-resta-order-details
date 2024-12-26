@@ -11,7 +11,7 @@ from src.services.etl_orchestration_service import ETLOrchestrator
 from src.config.settings import get_config
 from src.database.database import DatabaseManager
 from src.api.client import RestaAPI
-from src.database.models import User
+from src.database.models import Order, User
 from src.services.credential_manager import CredentialManagerService
 from src.services.order_sync import OrderSyncService
 from src.services.page_tracker import PageTrackerService
@@ -81,13 +81,7 @@ class OrderSyncApplication:
         try:
             # Database initialization
             db_manager = DatabaseManager(self.config.database.connection_string)
-            db_manager.create_tables()  # This will now create our new dimensional tables
-
-            # API client initialization
-            api_client = RestaAPI(
-                base_url=self.config.api.base_url,
-                page_size=self.config.api.page_size
-            )
+            db_manager.create_tables()
 
             # Get database session
             db_session = db_manager.get_session()
@@ -109,8 +103,11 @@ class OrderSyncApplication:
             # Initialize ETL orchestrator
             etl_orchestrator = ETLOrchestrator(db_session)
 
-            # Import initial credentials
-            credential_manager.import_credentials_from_yaml()
+            # Initialize API client
+            api_client = RestaAPI(
+                base_url=self.config.api.base_url,
+                page_size=self.config.api.page_size
+            )
 
             return ApplicationServices(
                 db_manager=db_manager,
@@ -119,7 +116,7 @@ class OrderSyncApplication:
                 page_tracker=page_tracker,
                 credential_manager=credential_manager,
                 schedule_manager=schedule_manager,
-                etl_orchestrator=etl_orchestrator
+                etl_orchestrator=etl_orchestrator  # Make sure this is included
             )
 
         except Exception as e:
@@ -222,74 +219,115 @@ class OrderSyncApplication:
             self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
 
     async def _process_restaurant_page(
-        self,
-        current_page: int,
-        services: ApplicationServices
-    ) -> bool:
-        """Process a single page of restaurant orders"""
-        self.logger.debug("Processing restaurant page...")
-        try:
-            orders_response = await services.api_client.get_orders_list(current_page)
-            
-            if not orders_response.get('Data'):
-                return False
-
-            for order in orders_response['Data']:
-                if not self.state.is_running:
+            self,
+            current_page: int,
+            services: ApplicationServices
+        ) -> bool:
+            """Process a single page of restaurant orders"""
+            self.logger.debug("Processing restaurant page...")
+            try:
+                orders_response = await services.api_client.get_orders_list(current_page)
+                
+                if not orders_response.get('Data'):
                     return False
 
-                order_details = await services.api_client.fetch_order_details(order['ID'])
-                if order_details and order_details.get('ErrorCode') == 0:
-                    await self._process_order(order_details, services)
+                for order in orders_response['Data']:
+                    if not self.state.is_running:
+                        return False
+
+                    try:
+                        order_details = await services.api_client.fetch_order_details(order['ID'])
+                        if order_details and order_details.get('ErrorCode') == 0:
+                            # First sync OLTP
+                            self.logger.info(f"Syncing OLTP for order {order['ID']}")
+                            oltp_order = services.sync_service.sync_order_data(order_details)
+                            
+                            # Then process ETL
+                            self.logger.info(f"Getting datetime key for order {oltp_order.id}")
+                            datetime_key = services.etl_orchestrator.get_datetime_key(oltp_order.creation_date)
+                            
+                            if datetime_key:
+                                self.logger.info(f"Starting ETL process for order {oltp_order.id}")
+                                await services.etl_orchestrator.process_order_dimensions_and_facts(
+                                    order=oltp_order,
+                                    datetime_key=datetime_key
+                                )
+                            else:
+                                self.logger.error(f"No datetime key found for order {oltp_order.id}")
+                        
+                        await asyncio.sleep(self.config.sync.delay_between_orders)
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error processing order {order['ID']}: {str(e)}", exc_info=True)
+                        # Continue processing other orders
+                        continue
+
+                return True
+
+            except Exception as e:
+                self.logger.error(f"Error processing page {current_page}: {str(e)}", exc_info=True)
+                return False
+    
+    async def _process_etl(self, order: Order, services: ApplicationServices) -> bool:
+        """Handle ETL processing for an order"""
+        try:
+            self.logger.info(f"Starting ETL process for order {order.id}")
+            
+            # Get datetime key
+            datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
+            if not datetime_key:
+                self.logger.error(f"Could not get datetime key for order {order.id}")
+                return False
                 
-                await asyncio.sleep(self.config.sync.delay_between_orders)
-
+            self.logger.info(f"Got datetime key {datetime_key}")
+            
+            # Process dimensions and facts
+            await services.etl_orchestrator.process_order_dimensions_and_facts(
+                order=order,
+                datetime_key=datetime_key
+            )
+            self.logger.info(f"Successfully completed ETL process for order {order.id}")
             return True
-
+            
         except Exception as e:
-            self.logger.error(f"Error processing page {current_page}: {str(e)}")
+            self.logger.error(f"Failed ETL processing for order {order.id}: {str(e)}", exc_info=True)
             return False
 
-    @retry_with_backoff(retries=3, backoff_factor=2)
+
+    #@retry_with_backoff(retries=3, backoff_factor=2)
     async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
         """Process a single order with validation and retries"""
         try:
             # First, sync to OLTP model
+            self.logger.info(f"Starting OLTP sync for order {order_data.get('ID')}")
             order = services.sync_service.sync_order_data(order_data)
             
-            # Get datetime key for the order
-            order_datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
-            if not order_datetime_key:
-                self.logger.error(f"Could not find datetime key for order {order.id}")
-                return False
-
-            # Fetch the customer record from the database
-            customer = services.sync_service.session.query(Customer).filter(
-                Customer.id == order.customer_id
-            ).first()
-            
-            if not customer:
-                self.logger.error(f"Could not find customer record for ID {order.customer_id}")
-                return False
-
-            # Log before customer dimension update
-            self.logger.info(f"Starting customer dimension update for customer {customer.id}")
+            # Then do ETL processing
+            etl_success = await self._process_etl(order, services)
+            if not etl_success:
+                self.logger.warning(f"ETL processing failed for order {order.id}")
                 
-            # Update customer dimension with explicit error handling
+            # Finally update customer dimension
             try:
-                services.etl_orchestrator.customer_service.update_customer_dimension(customer)
-                self.logger.info(f"Successfully updated customer dimension for customer {customer.id}")
+                customer = services.sync_service.session.query(Customer).filter(
+                    Customer.id == order.customer_id
+                ).first()
+                
+                if customer:
+                    self.logger.info(f"Starting customer dimension update for customer {customer.id}")
+                    services.etl_orchestrator.customer_service.update_customer_dimension(customer)
+                    self.logger.info(f"Successfully updated customer dimension for customer {customer.id}")
+                else:
+                    self.logger.error(f"Could not find customer record for ID {order.customer_id}")
             except Exception as e:
-                self.logger.error(f"Error updating customer dimension for customer {customer.id}: {str(e)}")
-                # Continue processing even if customer dimension update fails
-            
-            self.logger.info(f"Successfully processed order {order.id} in both OLTP and dimensional models")
+                self.logger.error(f"Error updating customer dimension: {str(e)}", exc_info=True)
+
             return True
 
         except Exception as e:
-            self.logger.error(f"Error processing order {order_data.get('ID')}: {str(e)}")
+            self.logger.error(f"Error processing order: {str(e)}", exc_info=True)
             raise
-    
+
     async def run(self):
         """Main application loop"""
         if not await self.initialize():
@@ -344,43 +382,6 @@ class OrderSyncApplication:
 
         self.logger.info("Application shutdown complete")
 
-# In main.py, update the _process_order method:
-
-    @retry_with_backoff(retries=3, backoff_factor=2)
-    async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
-        """Process a single order with validation and retries"""
-        try:
-            # First, sync to OLTP model
-            order = services.sync_service.sync_order_data(order_data)
-            
-            # Get datetime key for the order
-            order_datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
-            if not order_datetime_key:
-                self.logger.error(f"Could not find datetime key for order {order.id}")
-                return False
-
-            # Log before customer dimension update
-            self.logger.info(f"Starting customer dimension update for customer {order.customer_id}")
-                
-            # Update customer dimension with explicit error handling
-            try:
-                # Remove await since the method is not async
-                customer = services.sync_service.session.query(Customer).filter(Customer.id == order.customer_id).first()
-                if customer:
-                    services.etl_orchestrator.customer_service.update_customer_dimension(customer)
-                else:
-                    self.logger.error(f"Could not find customer record for ID {order.customer_id}")
-                self.logger.info(f"Successfully updated customer dimension for customer {order.customer_id}")
-            except Exception as e:
-                self.logger.error(f"Error updating customer dimension for customer {order.customer_id}: {str(e)}")
-                # Continue processing even if customer dimension update fails
-            
-            self.logger.info(f"Successfully processed order {order.id} in both OLTP and dimensional models")
-            return True
-
-        except Exception as e:
-            self.logger.error(f"Error processing order {order_data.get('ID')}: {str(e)}")
-            raise
 
     async def _process_restaurant_page(
         self,

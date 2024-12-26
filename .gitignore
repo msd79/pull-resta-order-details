@@ -2,3 +2,4 @@ venv/*
 order_sync.log
 __pycache__/
 creds.yaml
+add_file_location.sh

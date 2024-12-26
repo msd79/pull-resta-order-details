@@ -27,7 +27,7 @@ schedule:
   # Run from 9:00 AM to 5:00 PM on weekdays
   start_hour: 1
   start_minute: 0
-  end_hour: 16
+  end_hour: 17
   end_minute: 0
   active_days:
     - MONDAY
