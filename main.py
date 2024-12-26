@@ -19,6 +19,7 @@ from src.services.schedule_manager import ScheduleManager
 from src.utils.logging_config import setup_logging
 from src.utils.retry import retry_with_backoff
 from src.utils.validation import ValidationUtils
+from src.database.models import Customer
 
 @dataclass
 class ApplicationServices:
@@ -60,6 +61,21 @@ class OrderSyncApplication:
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
+    async def _initialize_dimensional_model(self, services: ApplicationServices) -> None:
+        """Initialize the dimensional model tables and base data."""
+        try:
+            self.logger.info("Initializing dimensional model...")
+            
+            # Initialize dimensions using the ETL orchestrator
+            await services.etl_orchestrator.initialize_dimensions()
+            
+            self.logger.info("Dimensional model initialization complete")
+            
+        except Exception as e:
+            self.logger.error(f"Error initializing dimensional model: {str(e)}")
+            raise
+
+    
     async def _initialize_services(self) -> ApplicationServices:
         """Initialize all application services"""
         try:
@@ -103,31 +119,12 @@ class OrderSyncApplication:
                 page_tracker=page_tracker,
                 credential_manager=credential_manager,
                 schedule_manager=schedule_manager,
-                etl_orchestrator=etl_orchestrator  # Add ETL orchestrator to services
+                etl_orchestrator=etl_orchestrator
             )
 
         except Exception as e:
             self.logger.error(f"Failed to initialize services: {str(e)}")
             raise
-    
-    async def _initialize_dimensional_model(self, services: ApplicationServices) -> None:
-        """Initialize the dimensional model tables and base data."""
-        try:
-            self.logger.info("Initializing dimensional model...")
-            await services.etl_orchestrator.initialize_dimensions()
-            self.logger.info("Dimensional model initialization complete")
-        except Exception as e:
-            self.logger.error(f"Error initializing dimensional model: {str(e)}")
-            raise
-
-    @asynccontextmanager
-    async def _service_context(self):
-        """Context manager for application services"""
-        try:
-            services = await self._initialize_services()
-            yield services
-        finally:
-            await self._cleanup_services(services)
 
     async def _cleanup_services(self, services: ApplicationServices):
         """Cleanup application services"""
@@ -135,12 +132,219 @@ class OrderSyncApplication:
             try:
                 # Add specific cleanup for each service
                 await services.api_client.close()
-                services.sync_service.close()
-                services.page_tracker.close()
-                services.db_manager.close()
-                services.creadential_manager.close()
+                # Note: Remove services.sync_service.close() if it doesn't exist
+                # Note: Remove services.page_tracker.close() if it doesn't exist
+                # Note: Remove services.credential_manager.close() if it doesn't exist
             except Exception as e:
                 self.logger.error(f"Error during service cleanup: {str(e)}")
+
+    @asynccontextmanager
+    async def _service_context(self):
+        """Context manager for application services"""
+        services = None
+        try:
+            services = await self._initialize_services()
+            yield services
+        finally:
+            if services:
+                await self._cleanup_services(services)
+
+    async def initialize(self) -> bool:
+        """Initialize application configuration and logging"""
+        try:
+            self.logger.debug("Starting application initialization...")
+            
+            # Load configuration
+            self.logger.debug("Loading configuration...")
+            self.config = get_config()
+
+            # Setup logging
+            self.logger.debug("Setting up logging...")
+            setup_logging(
+                log_dir=self.config.logging.filename,
+                log_level=getattr(logging, self.config.logging.level)
+            )
+
+            # Setup signal handlers
+            self.logger.debug("Setting up signal handlers...")
+            self._setup_signal_handlers()
+
+            self.logger.info("Application initialized successfully")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Failed to initialize application: {str(e)}")
+            import traceback
+            self.logger.error(f"Initialization error traceback: {traceback.format_exc()}")
+            return False
+
+    async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
+        """Process orders for a single restaurant"""
+        self.logger.info(f"Processing orders for restaurant: {restaurant_user.restaurant_id}")
+        try:
+            # Get credentials for the restaurant
+            credentials = services.credential_manager.get_credential_by_restaurant(restaurant_user.restaurant_id)
+            self.logger.debug(f"Got credentials for restaurant")
+            
+            if not credentials:
+                self.logger.error(f"No credentials found for restaurant {restaurant_user.restaurant_id}")
+                return
+            
+            # Login with restaurant credentials
+            session_token, company_id = await services.api_client.login(
+                email=credentials.get('username'),
+                password=credentials.get('password')
+            )
+            
+            # Get the last processed page index
+            current_page = services.page_tracker.get_last_page_index(
+                company_id=company_id,
+                company_name=restaurant_user.company_name
+            )
+
+            while self.state.is_running:
+                self.logger.info(f"Processing page index {current_page} for {restaurant_user.company_name}")
+                
+                # Process the current page
+                has_more_pages = await self._process_restaurant_page(
+                    current_page, services
+                )
+                
+                if not has_more_pages:
+                    break
+                
+                # Update the page tracker and move to next page
+                services.page_tracker.update_page_index(company_id, current_page)
+                current_page += 1
+                await asyncio.sleep(self.config.sync.delay_between_pages)
+
+        except Exception as e:
+            self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
+
+    async def _process_restaurant_page(
+        self,
+        current_page: int,
+        services: ApplicationServices
+    ) -> bool:
+        """Process a single page of restaurant orders"""
+        self.logger.debug("Processing restaurant page...")
+        try:
+            orders_response = await services.api_client.get_orders_list(current_page)
+            
+            if not orders_response.get('Data'):
+                return False
+
+            for order in orders_response['Data']:
+                if not self.state.is_running:
+                    return False
+
+                order_details = await services.api_client.fetch_order_details(order['ID'])
+                if order_details and order_details.get('ErrorCode') == 0:
+                    await self._process_order(order_details, services)
+                
+                await asyncio.sleep(self.config.sync.delay_between_orders)
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Error processing page {current_page}: {str(e)}")
+            return False
+
+    @retry_with_backoff(retries=3, backoff_factor=2)
+    async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
+        """Process a single order with validation and retries"""
+        try:
+            # First, sync to OLTP model
+            order = services.sync_service.sync_order_data(order_data)
+            
+            # Get datetime key for the order
+            order_datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
+            if not order_datetime_key:
+                self.logger.error(f"Could not find datetime key for order {order.id}")
+                return False
+
+            # Fetch the customer record from the database
+            customer = services.sync_service.session.query(Customer).filter(
+                Customer.id == order.customer_id
+            ).first()
+            
+            if not customer:
+                self.logger.error(f"Could not find customer record for ID {order.customer_id}")
+                return False
+
+            # Log before customer dimension update
+            self.logger.info(f"Starting customer dimension update for customer {customer.id}")
+                
+            # Update customer dimension with explicit error handling
+            try:
+                services.etl_orchestrator.customer_service.update_customer_dimension(customer)
+                self.logger.info(f"Successfully updated customer dimension for customer {customer.id}")
+            except Exception as e:
+                self.logger.error(f"Error updating customer dimension for customer {customer.id}: {str(e)}")
+                # Continue processing even if customer dimension update fails
+            
+            self.logger.info(f"Successfully processed order {order.id} in both OLTP and dimensional models")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Error processing order {order_data.get('ID')}: {str(e)}")
+            raise
+    
+    async def run(self):
+        """Main application loop"""
+        if not await self.initialize():
+            self.logger.error("Failed to initialize application. Exiting.")
+            return
+
+        self.logger.info("Starting order synchronization process...")
+
+        async with self._service_context() as services:
+            try:
+                # Initialize dimensional model before starting sync process
+                await self._initialize_dimensional_model(services)
+                # Check if we should start immediately
+                if not services.schedule_manager.should_start_immediately():
+                    wait_time = services.schedule_manager.time_until_next_window()
+                    self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
+                    await asyncio.sleep(min(wait_time, 3600))
+                else:
+                    self.logger.info("Within scheduled window - starting immediately")
+
+                while self.state.is_running:
+                    try:
+                        if not services.schedule_manager.is_within_schedule():
+                            wait_time = services.schedule_manager.time_until_next_window()
+                            self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
+                            await asyncio.sleep(min(wait_time, 3600))
+                            continue
+
+                        services.credential_manager.import_credentials_from_yaml()
+                        restaurant_users = services.credential_manager.list_credentials()
+                        
+                        for restaurant_user in restaurant_users:
+                            if not self.state.is_running:
+                                break
+                            
+                            if not services.schedule_manager.is_within_schedule():
+                                break
+                                
+                            await self._process_restaurant(restaurant_user, services)
+
+                        if self.state.is_running:
+                            self.logger.info("Completed sync cycle. Waiting before next cycle...")
+                            await asyncio.sleep(self.config.sync.polling_interval)
+
+                    except Exception as e:
+                        self.logger.error(f"Error in main sync loop: {str(e)}")
+                        await asyncio.sleep(self.config.sync.delay_on_error)
+
+            except Exception as e:
+                self.logger.error(f"Error during application run: {str(e)}")
+                raise
+
+        self.logger.info("Application shutdown complete")
+
+# In main.py, update the _process_order method:
 
     @retry_with_backoff(retries=3, backoff_factor=2)
     async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
@@ -160,7 +364,12 @@ class OrderSyncApplication:
                 
             # Update customer dimension with explicit error handling
             try:
-                await services.etl_orchestrator.customer_service.update_customer_dimension(order.customer)
+                # Remove await since the method is not async
+                customer = services.sync_service.session.query(Customer).filter(Customer.id == order.customer_id).first()
+                if customer:
+                    services.etl_orchestrator.customer_service.update_customer_dimension(customer)
+                else:
+                    self.logger.error(f"Could not find customer record for ID {order.customer_id}")
                 self.logger.info(f"Successfully updated customer dimension for customer {order.customer_id}")
             except Exception as e:
                 self.logger.error(f"Error updating customer dimension for customer {order.customer_id}: {str(e)}")
@@ -172,7 +381,7 @@ class OrderSyncApplication:
         except Exception as e:
             self.logger.error(f"Error processing order {order_data.get('ID')}: {str(e)}")
             raise
-        
+
     async def _process_restaurant_page(
         self,
         current_page: int,
@@ -337,6 +546,7 @@ def main():
     """Application entry point"""
     try:
         app = OrderSyncApplication()
+        # Run the async application
         asyncio.run(app.run())
     except KeyboardInterrupt:
         logging.info("Application terminated by user")

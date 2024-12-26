@@ -1,6 +1,7 @@
-# File location: src/services/datetime_dimension.py
+# File: src/services/datetime_dimension.py
+
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import logging
@@ -31,41 +32,27 @@ class DateTimeDimensionService:
 
     def generate_datetime_dimension(self, start_date: datetime, end_date: datetime) -> None:
         """
-        Generate datetime dimension records for the specified date range at 15-minute intervals.
+        Generate datetime dimension records for the specified date range at 1-hour intervals.
         Only generates records that don't already exist.
-        
-        Args:
-            start_date: Start date for dimension population
-            end_date: End date for dimension population
         """
-        # Check existing date range
-        existing_range = self.session.query(
-            func.min(DimDateTime.datetime),
-            func.max(DimDateTime.datetime)
-        ).first()
-
-        if existing_range[0] is not None:
-            # If records exist, adjust the date range to avoid duplicates
-            if existing_range[0] <= start_date and existing_range[1] >= end_date:
-                self.logger.info("DateTime dimension already populated for the specified range")
-                return
+        try:
+            self.logger.info(f"Generating datetime dimension from {start_date} to {end_date}")
             
-            # Adjust start_date if needed to avoid overlap
-            if existing_range[1] >= start_date:
-                start_date = existing_range[1] + timedelta(minutes=15)
-                
-            self.logger.info(f"Generating additional records from {start_date} to {end_date}")
+            # Ensure start_date is at the beginning of the hour
+            start_date = start_date.replace(minute=0, second=0, microsecond=0)
+            
+            # Ensure end_date is at the end of the hour
+            end_date = end_date.replace(minute=59, second=59, microsecond=999999)
+            
+            current_date = start_date
+            batch_size = 1000
+            batch = []
+            total_records = 0
 
-        current_date = start_date
-        batch_size = 1000
-        batch = []
-        total_records = 0
-
-        while current_date <= end_date:
-            # Generate 30-minute intervals for the day
-            for hour in range(24):
-                for minute in range(0, 60, 30):
-                    current_datetime = current_date.replace(hour=hour, minute=minute)
+            while current_date <= end_date:
+                # Generate hourly intervals for the day
+                for hour in range(24):
+                    current_datetime = current_date.replace(hour=hour, minute=0)
                     
                     # Skip if datetime already exists
                     exists = self.session.query(DimDateTime).filter(
@@ -81,13 +68,17 @@ class DateTimeDimensionService:
                         self._save_batch(batch)
                         batch = []
             
-            current_date += timedelta(days=1)
-        
-        # Save any remaining records
-        if batch:
-            self._save_batch(batch)
+                current_date += timedelta(days=1)
             
-        self.logger.info(f"Generated {total_records} new datetime records")
+            # Save any remaining records
+            if batch:
+                self._save_batch(batch)
+                
+            self.logger.info(f"Generated {total_records} new datetime records")
+                
+        except Exception as e:
+            self.logger.error(f"Error generating datetime dimension: {str(e)}")
+            raise
 
     def _create_datetime_record(self, dt: datetime) -> DimDateTime:
         """Create a single datetime dimension record."""
@@ -96,7 +87,7 @@ class DateTimeDimensionService:
         
         return DimDateTime(
             datetime=dt,
-            date=date_as_datetime,  # Using datetime instead of date
+            date=date_as_datetime,
             year=dt.year,
             quarter=((dt.month - 1) // 3) + 1,
             month=dt.month,
@@ -104,9 +95,9 @@ class DateTimeDimensionService:
             day=dt.day,
             hour=dt.hour,
             minute=dt.minute,
-            day_of_week=dt.isoweekday(),  # 1=Monday, 7=Sunday
-            is_weekend=dt.isoweekday() in [6, 7],  # Saturday=6, Sunday=7
-            is_holiday=self._is_holiday(dt),  # Implement holiday logic
+            day_of_week=dt.isoweekday(),
+            is_weekend=dt.isoweekday() in [6, 7],
+            is_holiday=self._is_holiday(dt),
             day_part=self._get_day_part(dt.hour),
             is_peak_hour=self._is_peak_hour(dt.hour),
             is_business_hour=self._is_business_hour(dt.hour),
@@ -143,56 +134,74 @@ class DateTimeDimensionService:
         return self.business_hours['start'] <= hour < self.business_hours['end']
 
     def _is_holiday(self, dt: datetime) -> bool:
-        """
-        Determine if the given date is a holiday.
-        This is a placeholder - implement actual holiday logic based on your needs.
-        """
-        # TODO: Implement holiday logic
+        """Determine if the given date is a holiday."""
+        # TODO: Implement holiday logic based on your needs
         return False
 
     def _get_fiscal_year(self, dt: datetime) -> int:
-        """
-        Get fiscal year for the date.
-        Assuming fiscal year starts July 1st.
-        """
+        """Get fiscal year for the date (assuming fiscal year starts July 1st)."""
         if dt.month >= 7:
             return dt.year
         return dt.year - 1
 
     def _get_fiscal_quarter(self, dt: datetime) -> int:
-        """
-        Get fiscal quarter for the date.
-        Assuming fiscal year starts July 1st.
-        """
+        """Get fiscal quarter for the date."""
         month = dt.month
         if month >= 7:
             return ((month - 7) // 3) + 1
         return ((month + 5) // 3) + 1
 
     def _get_fiscal_month(self, dt: datetime) -> int:
-        """
-        Get fiscal month for the date.
-        Assuming fiscal year starts July 1st.
-        """
+        """Get fiscal month for the date."""
         if dt.month >= 7:
             return dt.month - 6
         return dt.month + 6
 
     def get_datetime_key(self, dt: datetime) -> Optional[int]:
-        """
-        Get the surrogate key for a given datetime.
-        Used when populating fact tables.
-        """
+        """Get the surrogate key for a given datetime."""
         try:
-            # Round to nearest 30 minutes
-            minute = (dt.minute // 30) * 30
-            dt = dt.replace(minute=minute, second=0, microsecond=0)
+            if not dt:
+                self.logger.error("Received null datetime")
+                return None
+                
+            # Round to nearest hour
+            dt = dt.replace(minute=0, second=0, microsecond=0)
+            
+            self.logger.debug(f"Looking for datetime key for: {dt}")
+            
+            # Check if we need to generate more historical dates
+            earliest_date = self.session.query(func.min(DimDateTime.datetime)).scalar()
+            latest_date = self.session.query(func.max(DimDateTime.datetime)).scalar()
+            
+            if earliest_date and dt < earliest_date:
+                self.logger.info(f"Date {dt} is before our current dimension range. Generating more historical dates...")
+                new_start = dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                self.generate_datetime_dimension(
+                    start_date=new_start,
+                    end_date=earliest_date
+                )
+            elif latest_date and dt > latest_date:
+                self.logger.info(f"Date {dt} is beyond our current dimension range. Generating more future dates...")
+                self.generate_datetime_dimension(
+                    start_date=latest_date,
+                    end_date=dt + timedelta(days=30)
+                )
             
             result = self.session.query(DimDateTime.datetime_key)\
                 .filter(DimDateTime.datetime == dt)\
                 .first()
                 
-            return result[0] if result else None
-            
+            if not result:
+                self.logger.error(f"No datetime key found for {dt}")
+                date_range = self.session.query(
+                    func.min(DimDateTime.datetime),
+                    func.max(DimDateTime.datetime)
+                ).first()
+                self.logger.error(f"Current datetime dimension range: {date_range[0]} to {date_range[1]}")
+                return None
+                
+            return result[0]
+                
         except Exception as e:
-            raise Exception(f"Error getting datetime key: {str(e)}")
+            self.logger.error(f"Error getting datetime key: {str(e)}")
+            raise
