@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .models import Base
+from .models import Base as OLTPBase
+from src.database.dimentional_models import Base as DWBase
 
 class DatabaseManager:
     def __init__(self, connection_string):
@@ -8,7 +9,9 @@ class DatabaseManager:
         self.SessionLocal = sessionmaker(bind=self.engine)
 
     def create_tables(self):
-        Base.metadata.create_all(self.engine)
+        # Create tables for both OLTP and dimensional models
+        OLTPBase.metadata.create_all(self.engine)
+        DWBase.metadata.create_all(self.engine)
 
     def get_session(self):
         return self.SessionLocal()

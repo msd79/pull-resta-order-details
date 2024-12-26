@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 
+from src.services.etl_orchestration_service import ETLOrchestrator
 from src.config.settings import get_config
 from src.database.database import DatabaseManager
 from src.api.client import RestaAPI
@@ -28,6 +29,7 @@ class ApplicationServices:
     page_tracker: PageTrackerService
     credential_manager: CredentialManagerService
     schedule_manager: ScheduleManager
+    etl_orchestrator: ETLOrchestrator
 
 class ApplicationState:
     """Manages application state and lifecycle"""
@@ -59,45 +61,65 @@ class OrderSyncApplication:
         signal.signal(signal.SIGTERM, signal_handler)
 
     async def _initialize_services(self) -> ApplicationServices:
-            """Initialize all application services"""
-            try:
-                # Previous initialization code remains the same
-                db_manager = DatabaseManager(self.config.database.connection_string)
-                db_manager.create_tables()
+        """Initialize all application services"""
+        try:
+            # Database initialization
+            db_manager = DatabaseManager(self.config.database.connection_string)
+            db_manager.create_tables()  # This will now create our new dimensional tables
 
-                api_client = RestaAPI(
-                    base_url=self.config.api.base_url,
-                    page_size=self.config.api.page_size
-                )
+            # API client initialization
+            api_client = RestaAPI(
+                base_url=self.config.api.base_url,
+                page_size=self.config.api.page_size
+            )
 
-                db_session = db_manager.get_session()
-                sync_service = OrderSyncService(db_session)
-                page_tracker = PageTrackerService(db_session)
-                credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
+            # Get database session
+            db_session = db_manager.get_session()
 
-                credential_manager.import_credentials_from_yaml()
-                
-                # Initialize schedule manager with config values
-                schedule_manager = ScheduleManager(
-                    start_hour=self.config.schedule.start_hour,
-                    start_minute=self.config.schedule.start_minute,
-                    end_hour=self.config.schedule.end_hour,
-                    end_minute=self.config.schedule.end_minute,
-                    active_days=self.config.schedule.active_days
-                )
+            # Initialize all services
+            sync_service = OrderSyncService(db_session)
+            page_tracker = PageTrackerService(db_session)
+            credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
+            
+            # Initialize schedule manager
+            schedule_manager = ScheduleManager(
+                start_hour=self.config.schedule.start_hour,
+                start_minute=self.config.schedule.start_minute,
+                end_hour=self.config.schedule.end_hour,
+                end_minute=self.config.schedule.end_minute,
+                active_days=self.config.schedule.active_days
+            )
 
-                return ApplicationServices(
-                    db_manager=db_manager,
-                    api_client=api_client,
-                    sync_service=sync_service,
-                    page_tracker=page_tracker,
-                    credential_manager=credential_manager,
-                    schedule_manager=schedule_manager
-                )
+            # Initialize ETL orchestrator
+            etl_orchestrator = ETLOrchestrator(db_session)
 
-            except Exception as e:
-                self.logger.error(f"Failed to initialize services: {str(e)}")
-                raise
+            # Import initial credentials
+            credential_manager.import_credentials_from_yaml()
+
+            return ApplicationServices(
+                db_manager=db_manager,
+                api_client=api_client,
+                sync_service=sync_service,
+                page_tracker=page_tracker,
+                credential_manager=credential_manager,
+                schedule_manager=schedule_manager,
+                etl_orchestrator=etl_orchestrator  # Add ETL orchestrator to services
+            )
+
+        except Exception as e:
+            self.logger.error(f"Failed to initialize services: {str(e)}")
+            raise
+    
+    async def _initialize_dimensional_model(self, services: ApplicationServices) -> None:
+        """Initialize the dimensional model tables and base data."""
+        try:
+            self.logger.info("Initializing dimensional model...")
+            await services.etl_orchestrator.initialize_dimensions()
+            self.logger.info("Dimensional model initialization complete")
+        except Exception as e:
+            self.logger.error(f"Error initializing dimensional model: {str(e)}")
+            raise
+
     @asynccontextmanager
     async def _service_context(self):
         """Context manager for application services"""
@@ -124,19 +146,33 @@ class OrderSyncApplication:
     async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
         """Process a single order with validation and retries"""
         try:
-            # if not ValidationUtils.validate_required_fields(order_data, ['ID', 'Restaurant', 'Customer']):
-            #     self.logger.error(f"Invalid order data for order {order_data.get('ID')}")
-            #     return False
+            # First, sync to OLTP model
+            order = services.sync_service.sync_order_data(order_data)
+            
+            # Get datetime key for the order
+            order_datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
+            if not order_datetime_key:
+                self.logger.error(f"Could not find datetime key for order {order.id}")
+                return False
 
-            order =  services.sync_service.sync_order_data(order_data)
-            #self.logger.info(f"Successfully processed order {order.id}")
-           
+            # Log before customer dimension update
+            self.logger.info(f"Starting customer dimension update for customer {order.customer_id}")
+                
+            # Update customer dimension with explicit error handling
+            try:
+                await services.etl_orchestrator.customer_service.update_customer_dimension(order.customer)
+                self.logger.info(f"Successfully updated customer dimension for customer {order.customer_id}")
+            except Exception as e:
+                self.logger.error(f"Error updating customer dimension for customer {order.customer_id}: {str(e)}")
+                # Continue processing even if customer dimension update fails
+            
+            self.logger.info(f"Successfully processed order {order.id} in both OLTP and dimensional models")
             return True
 
         except Exception as e:
             self.logger.error(f"Error processing order {order_data.get('ID')}: {str(e)}")
             raise
-
+        
     async def _process_restaurant_page(
         self,
         current_page: int,
@@ -241,35 +277,35 @@ class OrderSyncApplication:
             return False
 
     async def run(self):
-            """Main application loop"""
-            if not await self.initialize():
-                self.logger.error("Failed to initialize application. Exiting.")
-                return
+        """Main application loop"""
+        if not await self.initialize():
+            self.logger.error("Failed to initialize application. Exiting.")
+            return
 
-            self.logger.info("Starting order synchronization process...")
+        self.logger.info("Starting order synchronization process...")
 
-            #import credentials from yaml
-            
+        async with self._service_context() as services:
+            try:
+                # Initialize dimensional model before starting sync process
+                await self._initialize_dimensional_model(services)
 
-            async with self._service_context() as services:
                 # Check if we should start immediately
                 if not services.schedule_manager.should_start_immediately():
                     wait_time = services.schedule_manager.time_until_next_window()
                     self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
-                    await asyncio.sleep(min(wait_time, 3600))  # Sleep for wait_time or 1 hour, whichever is shorter
+                    await asyncio.sleep(min(wait_time, 3600))
                 else:
                     self.logger.info("Within scheduled window - starting immediately")
 
                 while self.state.is_running:
                     try:
-                        # Check if we're within the scheduled running window
+                        # Rest of your existing run loop code remains the same
                         if not services.schedule_manager.is_within_schedule():
                             wait_time = services.schedule_manager.time_until_next_window()
                             self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
-                            await asyncio.sleep(min(wait_time, 3600))  # Sleep for wait_time or 1 hour, whichever is shorter
+                            await asyncio.sleep(min(wait_time, 3600))
                             continue
 
-                        # Rest of the original run loop
                         services.credential_manager.import_credentials_from_yaml()
                         restaurant_users = services.credential_manager.list_credentials()
                         
@@ -277,7 +313,6 @@ class OrderSyncApplication:
                             if not self.state.is_running:
                                 break
                             
-                            # Check schedule again before processing each restaurant
                             if not services.schedule_manager.is_within_schedule():
                                 break
                                 
@@ -291,7 +326,13 @@ class OrderSyncApplication:
                         self.logger.error(f"Error in main sync loop: {str(e)}")
                         await asyncio.sleep(self.config.sync.delay_on_error)
 
-            self.logger.info("Application shutdown complete")
+            except Exception as e:
+                self.logger.error(f"Error during application run: {str(e)}")
+                raise
+
+        self.logger.info("Application shutdown complete")
+
+
 def main():
     """Application entry point"""
     try:
