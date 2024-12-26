@@ -1,6 +1,5 @@
 from typing import Optional
-
-from requests import Session
+from sqlalchemy.orm import Session
 from src.database.dimentional_models import FactCustomerMetrics, FactOrders, FactPayments
 from src.database.models import Order, Payment
 import logging
@@ -10,10 +9,12 @@ class FactPopulationService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    
     def populate_fact_orders(self, order: Order, datetime_key: int,
                         customer_key: int, restaurant_key: int,
-                        promotion_key: Optional[int] = None) -> None:
+                        promotion_key: Optional[int] = None) -> int:
+        """
+        Populate fact_orders table and return the generated order_key
+        """
         try:
             # Check if fact already exists
             existing = self.session.query(FactOrders)\
@@ -22,7 +23,7 @@ class FactPopulationService:
                 
             if existing:
                 self.logger.info(f"Fact order already exists for order {order.id}")
-                return
+                return existing.order_key
 
             fact_order = FactOrders(
                 order_id=order.id,
@@ -41,8 +42,10 @@ class FactPopulationService:
                 used_points=order.used_points
             )
             self.session.add(fact_order)
-            self.session.commit()
+            self.session.flush()  # This will populate the order_key
+            
             self.logger.info(f"Successfully populated fact_orders for order {order.id}")
+            return fact_order.order_key
 
         except Exception as e:
             self.session.rollback()
@@ -51,6 +54,9 @@ class FactPopulationService:
 
     def populate_fact_payments(self, payment: Payment, order_key: int,
                             datetime_key: int, payment_method_key: int) -> None:
+        """
+        Populate fact_payments table using the order_key from fact_orders
+        """
         try:
             # Check if fact already exists
             existing = self.session.query(FactPayments)\
@@ -63,7 +69,7 @@ class FactPopulationService:
 
             fact_payment = FactPayments(
                 payment_id=payment.id,
-                order_key=order_key,
+                order_key=order_key,  # Using the order_key from fact_orders
                 datetime_key=datetime_key,
                 payment_method_key=payment_method_key,
                 sub_total=payment.sub_total,

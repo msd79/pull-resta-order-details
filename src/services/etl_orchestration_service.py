@@ -97,12 +97,11 @@ class ETLOrchestrator:
         """Get datetime surrogate key for fact table population."""
         return self.datetime_service.get_datetime_key(dt)
     
-    
     async def process_order_dimensions_and_facts(self, order: Order, datetime_key: int) -> None:
         """Process all dimensions and facts for an order."""
         self.logger.info(f"Starting ETL process for order {order.id}")
         try:
-            # 1. Process Restaurant Dimension - Query for restaurant first
+            # 1. Process Restaurant Dimension
             self.logger.info(f"Processing restaurant dimension for order {order.id}")
             restaurant = self.session.query(Restaurant).filter_by(id=order.restaurant_id).first()
             if not restaurant:
@@ -112,7 +111,6 @@ class ETLOrchestrator:
             self.session.flush()
             if not restaurant_key:
                 raise ValueError(f"Failed to get restaurant key for {restaurant.id}")
-
 
             # 2. Get Customer Key
             self.logger.info(f"Getting customer key for order {order.id}")
@@ -129,9 +127,9 @@ class ETLOrchestrator:
                     promotion_key = self.promotion_service.update_promotion_dimension(promotion)
                 self.session.flush()
 
-            # 4. Populate fact_orders
+            # 4. Populate fact_orders and get the order_key
             self.logger.info(f"Populating fact_orders for order {order.id}")
-            self.fact_service.populate_fact_orders(
+            order_key = self.fact_service.populate_fact_orders(
                 order=order,
                 datetime_key=datetime_key,
                 customer_key=customer_key,
@@ -139,7 +137,7 @@ class ETLOrchestrator:
                 promotion_key=promotion_key
             )
 
-            # 5. Process Payments
+            # 5. Process Payments using the returned order_key
             payments = self.session.query(Payment).filter_by(order_id=order.id).all()
             self.logger.info(f"Processing {len(payments)} payments for order {order.id}")
             
@@ -149,26 +147,24 @@ class ETLOrchestrator:
                     payment_method_key = self.payment_method_service.update_payment_method_dimension(payment)
                     self.session.flush()
 
-                    # Populate fact_payments
+                    # Populate fact_payments with the correct order_key
                     self.fact_service.populate_fact_payments(
                         payment=payment,
-                        order_key=order.id,
+                        order_key=order_key,  # Using the order_key from fact_orders
                         datetime_key=datetime_key,
                         payment_method_key=payment_method_key
                     )
                 except Exception as payment_error:
                     self.logger.error(f"Failed to process payment {payment.id}: {str(payment_error)}")
 
-            # Commit all changes at once
             self.session.commit()
             self.logger.info(f"Successfully completed ETL process for order {order.id}")
 
         except Exception as e:
             self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
             self.session.rollback()
-            raise
-
-
+            raise   
+ 
     def _get_restaurant_key(self, restaurant_id: int) -> int:
         result = self.session.query(DimRestaurant.restaurant_key)\
             .filter_by(restaurant_id=restaurant_id, is_current=True)\
