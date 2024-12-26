@@ -1,3 +1,4 @@
+# File location: src/database/models.py
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime

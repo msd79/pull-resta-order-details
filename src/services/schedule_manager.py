@@ -1,3 +1,4 @@
+# File location: src/services/schedule_manager.py
 from datetime import datetime, time
 from dataclasses import dataclass
 from typing import Optional, Set
