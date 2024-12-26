@@ -40,7 +40,7 @@ class OrderSyncService:
             # Handle promotion if present
             promotion_id = None
             if data['Promotion'] is not None:
-                promotion = self._sync_promotion(data['Promotion'])
+                promotion = self._sync_promotion(data['Promotion'], restaurant)
                 promotion_id = promotion.id
             
             # Handle address for delivery orders
@@ -105,7 +105,7 @@ class OrderSyncService:
             self.logger.error(f"Error syncing customer: {str(e)}")
             raise
 
-    def _sync_promotion(self, promotion_data: dict) -> Promotion:
+    def _sync_promotion(self, promotion_data: dict, restaurant: Restaurant) -> Promotion:
         """Sync promotion data to database."""
         try:
             # Always set externalID to 0 if it's a string that contains text
@@ -134,7 +134,8 @@ class OrderSyncService:
                     minSubTotal=promotion_data['MinSubTotal'],
                     discountType=promotion_data['DiscountType'],
                     discountAmount=promotion_data['DiscountAmount'],
-                    couponCode=promotion_data['CouponCode']
+                    couponCode=promotion_data['CouponCode'],
+                    restaurant_id=restaurant["ID"]
                 )
             )
             return promotion

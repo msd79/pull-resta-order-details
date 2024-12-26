@@ -86,6 +86,7 @@ class Promotion(Base):
     discountType = Column(Integer)
     discountAmount = Column(Float)
     couponCode = Column(String(255), nullable=True)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
 
 class Order(Base):
     __tablename__ = 'orders'
