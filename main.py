@@ -174,100 +174,7 @@ class OrderSyncApplication:
             import traceback
             self.logger.error(f"Initialization error traceback: {traceback.format_exc()}")
             return False
-
-    async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
-        """Process orders for a single restaurant"""
-        self.logger.info(f"Processing orders for restaurant: {restaurant_user.restaurant_id}")
-        try:
-            # Get credentials for the restaurant
-            credentials = services.credential_manager.get_credential_by_restaurant(restaurant_user.restaurant_id)
-            self.logger.debug(f"Got credentials for restaurant")
-            
-            if not credentials:
-                self.logger.error(f"No credentials found for restaurant {restaurant_user.restaurant_id}")
-                return
-            
-            # Login with restaurant credentials
-            session_token, company_id = await services.api_client.login(
-                email=credentials.get('username'),
-                password=credentials.get('password')
-            )
-            
-            # Get the last processed page index
-            current_page = services.page_tracker.get_last_page_index(
-                company_id=company_id,
-                company_name=restaurant_user.company_name
-            )
-
-            while self.state.is_running:
-                self.logger.info(f"Processing page index {current_page} for {restaurant_user.company_name}")
-                
-                # Process the current page
-                has_more_pages = await self._process_restaurant_page(
-                    current_page, services
-                )
-                
-                if not has_more_pages:
-                    break
-                
-                # Update the page tracker and move to next page
-                services.page_tracker.update_page_index(company_id, current_page)
-                current_page += 1
-                await asyncio.sleep(self.config.sync.delay_between_pages)
-
-        except Exception as e:
-            self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
-
-    async def _process_restaurant_page(
-            self,
-            current_page: int,
-            services: ApplicationServices
-        ) -> bool:
-            """Process a single page of restaurant orders"""
-            self.logger.debug("Processing restaurant page...")
-            try:
-                orders_response = await services.api_client.get_orders_list(current_page)
-                
-                if not orders_response.get('Data'):
-                    return False
-
-                for order in orders_response['Data']:
-                    if not self.state.is_running:
-                        return False
-
-                    try:
-                        order_details = await services.api_client.fetch_order_details(order['ID'])
-                        if order_details and order_details.get('ErrorCode') == 0:
-                            # First sync OLTP
-                            self.logger.info(f"Syncing OLTP for order {order['ID']}")
-                            oltp_order = services.sync_service.sync_order_data(order_details)
-                            
-                            # Then process ETL
-                            self.logger.info(f"Getting datetime key for order {oltp_order.id}")
-                            datetime_key = services.etl_orchestrator.get_datetime_key(oltp_order.creation_date)
-                            
-                            if datetime_key:
-                                self.logger.info(f"Starting ETL process for order {oltp_order.id}")
-                                await services.etl_orchestrator.process_order_dimensions_and_facts(
-                                    order=oltp_order,
-                                    datetime_key=datetime_key
-                                )
-                            else:
-                                self.logger.error(f"No datetime key found for order {oltp_order.id}")
-                        
-                        await asyncio.sleep(self.config.sync.delay_between_orders)
-                        
-                    except Exception as e:
-                        self.logger.error(f"Error processing order {order['ID']}: {str(e)}", exc_info=True)
-                        # Continue processing other orders
-                        continue
-
-                return True
-
-            except Exception as e:
-                self.logger.error(f"Error processing page {current_page}: {str(e)}", exc_info=True)
-                return False
-    
+ 
     async def _process_etl(self, order: Order, services: ApplicationServices) -> bool:
         """Handle ETL processing for an order"""
         try:
@@ -293,8 +200,7 @@ class OrderSyncApplication:
             self.logger.error(f"Failed ETL processing for order {order.id}: {str(e)}", exc_info=True)
             return False
 
-
-    #@retry_with_backoff(retries=3, backoff_factor=2)
+    @retry_with_backoff(retries=3, backoff_factor=2)
     async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
         """Process a single order with validation and retries"""
         try:
@@ -381,7 +287,6 @@ class OrderSyncApplication:
                 raise
 
         self.logger.info("Application shutdown complete")
-
 
     async def _process_restaurant_page(
         self,

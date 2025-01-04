@@ -8,7 +8,7 @@ from src.services.fact_population_service import FactPopulationService
 from src.services.payment_method_dimension import PaymentMethodDimensionService
 from src.services.promotion_dimension import PromotionDimensionService
 from src.services.restaurant_dimension import RestaurantDimensionService
-from src.database.models import Order, Payment, Promotion, Restaurant
+from src.database.models import Customer, Order, Payment, Promotion, Restaurant
 from src.services.datetime_dimension import DateTimeDimensionService
 from src.services.customer_dimension import CustomerDimensionService
 from src.database.dimentional_models import DimCustomer, DimDateTime, DimPaymentMethod, DimPromotion, DimRestaurant
@@ -98,7 +98,17 @@ class ETLOrchestrator:
         return self.datetime_service.get_datetime_key(dt)
     
     async def process_order_dimensions_and_facts(self, order: Order, datetime_key: int) -> None:
-        """Process all dimensions and facts for an order."""
+        """
+        Process all dimensions and facts for an order.
+        
+        Args:
+            order (Order): The order to process
+            datetime_key (int): The datetime key from dim_datetime
+            
+        Raises:
+            ValueError: If required dimension keys cannot be obtained
+            Exception: For any other processing errors
+        """
         self.logger.info(f"Starting ETL process for order {order.id}")
         try:
             # 1. Process Restaurant Dimension
@@ -136,8 +146,11 @@ class ETLOrchestrator:
                 restaurant_key=restaurant_key,
                 promotion_key=promotion_key
             )
+            
+            if not order_key:
+                raise ValueError(f"Failed to get order key for order {order.id}")
 
-            # 5. Process Payments using the returned order_key
+            # 5. Process Payments
             payments = self.session.query(Payment).filter_by(order_id=order.id).all()
             self.logger.info(f"Processing {len(payments)} payments for order {order.id}")
             
@@ -147,24 +160,123 @@ class ETLOrchestrator:
                     payment_method_key = self.payment_method_service.update_payment_method_dimension(payment)
                     self.session.flush()
 
-                    # Populate fact_payments with the correct order_key
+                    if not payment_method_key:
+                        raise ValueError(f"Failed to get payment method key for payment {payment.id}")
+
+                    # Populate fact_payments
                     self.fact_service.populate_fact_payments(
                         payment=payment,
-                        order_key=order_key,  # Using the order_key from fact_orders
+                        order_key=order_key,
                         datetime_key=datetime_key,
                         payment_method_key=payment_method_key
                     )
                 except Exception as payment_error:
                     self.logger.error(f"Failed to process payment {payment.id}: {str(payment_error)}")
+                    raise
 
+            # 6. Process Customer Metrics
+            self.logger.info(f"Processing customer metrics for order {order.id}")
+            await self.process_customer_metrics(
+                customer_id=order.customer_id,
+                order_date=order.creation_date,
+                customer_key=customer_key
+            )
+
+            # 7. Update Customer Dimension
+            self.logger.info(f"Updating customer dimension for order {order.id}")
+            customer = self.session.query(Customer).get(order.customer_id)
+            if customer:
+                self.customer_service.update_customer_dimension(customer)
+
+            # Commit all changes
             self.session.commit()
             self.logger.info(f"Successfully completed ETL process for order {order.id}")
 
         except Exception as e:
-            self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
             self.session.rollback()
-            raise   
- 
+            self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
+            raise 
+
+    async def process_customer_metrics(self, customer_id: int, order_date: datetime, customer_key: int) -> None:
+        """Process customer metrics for fact table population"""
+        try:
+            # Get datetime key for the order date
+            date_start = order_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            datetime_key = self.datetime_service.get_datetime_key(date_start)
+            
+            if not datetime_key:
+                raise ValueError(f"Could not get datetime key for date {date_start}")
+                
+            # Calculate daily metrics
+            daily_metrics = self._calculate_daily_customer_metrics(customer_id, order_date)
+            
+            # Calculate running metrics
+            running_metrics = self._calculate_running_metrics(customer_id, order_date)
+            
+            # Combine metrics
+            all_metrics = {**daily_metrics, **running_metrics}
+            
+            # Populate fact table
+            self.fact_service.populate_fact_customer_metrics(
+                customer_key=customer_key,
+                datetime_key=datetime_key,
+                daily_metrics=all_metrics
+            )
+            
+        except Exception as e:
+            self.logger.error(f"Error processing customer metrics: {str(e)}")
+            raise
+
+    def _calculate_running_metrics(self, customer_id: int, current_date: datetime) -> dict:
+        """Calculate running metrics for a customer up to the given date"""
+        try:
+            from sqlalchemy import func
+            from src.database.models import Order
+            
+            # Query all orders up to current date
+            orders = self.session.query(Order).filter(
+                Order.customer_id == customer_id,
+                Order.creation_date <= current_date
+            ).order_by(Order.creation_date).all()
+            
+            if not orders:
+                return {
+                    'running_order_count': 0,
+                    'running_total_spend': 0.0,
+                    'running_avg_order_value': 0.0,
+                    'days_since_last_order': 0,
+                    'order_frequency_days': 0.0
+                }
+                
+            # Calculate metrics
+            running_order_count = len(orders)
+            running_total_spend = sum(order.total for order in orders)
+            running_avg_order_value = round(running_total_spend / running_order_count, 2)
+            
+            # Calculate days since last order
+            last_order_date = orders[-1].creation_date
+            days_since_last_order = (current_date - last_order_date).days
+            
+            # Calculate average days between orders
+            if running_order_count > 1:
+                first_order_date = orders[0].creation_date
+                total_days = (last_order_date - first_order_date).days
+                order_frequency_days = round(total_days / (running_order_count - 1), 2)
+            else:
+                order_frequency_days = 0.0
+                
+            return {
+                'running_order_count': running_order_count,
+                'running_total_spend': running_total_spend,
+                'running_avg_order_value': running_avg_order_value,
+                'days_since_last_order': days_since_last_order,
+                'order_frequency_days': order_frequency_days
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating running metrics: {str(e)}")
+            raise 
+
     def _get_restaurant_key(self, restaurant_id: int) -> int:
         result = self.session.query(DimRestaurant.restaurant_key)\
             .filter_by(restaurant_id=restaurant_id, is_current=True)\

@@ -29,7 +29,8 @@ class PromotionDimensionService:
                     coupon_code=promotion.couponCode,
                     is_first_order_only=promotion.onlyFirstOrder,
                     is_once_per_customer=promotion.oncePerCustomer,
-                    company_id=promotion.companyID
+                    company_id=promotion.companyID,
+                    restaurant_id=promotion.restaurant_id
                 )
                 self.session.add(dim_promotion)
                 self.session.commit()

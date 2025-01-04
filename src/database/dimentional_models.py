@@ -81,7 +81,6 @@ class DimRestaurant(Base):
     avg_daily_orders = Column(Float)
     avg_order_value = Column(Float)
     peak_hour_capacity = Column(Integer)
-    typical_delivery_time_mins = Column(Integer)
 
 class DimPromotion(Base):
     __tablename__ = 'dim_promotion'
@@ -103,6 +102,7 @@ class DimPromotion(Base):
     is_first_order_only = Column(Boolean)
     is_once_per_customer = Column(Boolean)
     company_id = Column(Integer)
+    restaurant_id = Column(Integer)
 
 class DimPaymentMethod(Base):
     __tablename__ = 'dim_payment_method'
@@ -142,10 +142,6 @@ class FactOrders(Base):
     total = Column(Float, nullable=False)
     
     # Additional metrics
-    delivery_distance_km = Column(Float)
-    preparation_time_mins = Column(Integer)
-    delivery_time_mins = Column(Integer)
-    total_items = Column(Integer)
     used_points = Column(Integer)
 
 class FactPayments(Base):

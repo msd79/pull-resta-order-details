@@ -47,8 +47,8 @@ class CustomerDimensionService:
                 
                 # Pre-calculated metrics
                 lifetime_order_count=metrics.get('total_orders', 0),
-                lifetime_order_value=metrics.get('total_spent', 0.0),
-                average_order_value=metrics.get('avg_order_value', 0.0),
+                lifetime_order_value=round(metrics.get('total_spent', 0.0), 2),
+                average_order_value = round(metrics.get('avg_order_value', 0.0), 2),
                 first_order_date=metrics.get('first_order_date'),
                 last_order_date=metrics.get('last_order_date'),
                 customer_segment=customer_segment,

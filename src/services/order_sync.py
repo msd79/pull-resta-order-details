@@ -135,7 +135,7 @@ class OrderSyncService:
                     discountType=promotion_data['DiscountType'],
                     discountAmount=promotion_data['DiscountAmount'],
                     couponCode=promotion_data['CouponCode'],
-                    restaurant_id=restaurant["ID"]
+                    restaurant_id=restaurant.id
                 )
             )
             return promotion

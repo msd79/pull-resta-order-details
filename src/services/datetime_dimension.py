@@ -96,7 +96,7 @@ class DateTimeDimensionService:
             hour=dt.hour,
             minute=dt.minute,
             day_of_week=dt.isoweekday(),
-            is_weekend=dt.isoweekday() in [6, 7],
+            is_weekend=dt.isoweekday() in [5, 6, 7],
             is_holiday=self._is_holiday(dt),
             day_part=self._get_day_part(dt.hour),
             is_peak_hour=self._is_peak_hour(dt.hour),

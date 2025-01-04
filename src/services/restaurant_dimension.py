@@ -25,7 +25,9 @@ class RestaurantDimensionService:
                 restaurant_name=restaurant.name,
                 effective_date=datetime.now(),
                 expiration_date=None,
-                is_current=True
+                is_current=True,
+              
+
             )
 
             if current_record:
