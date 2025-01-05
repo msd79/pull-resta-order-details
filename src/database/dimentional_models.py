@@ -167,14 +167,14 @@ class FactCustomerMetrics(Base):
     __tablename__ = 'fact_customer_metrics'
     
     metric_key = Column(Integer, primary_key=True)
+    order_id = Column(Integer, nullable=False, unique=True)  # Added order_id as unique identifier
     customer_key = Column(Integer, ForeignKey('dim_customer.customer_key'), nullable=False)
-    datetime_key = Column(Integer, ForeignKey('dim_datetime.datetime_key'), nullable=False)  # Grain date
+    datetime_key = Column(Integer, ForeignKey('dim_datetime.datetime_key'), nullable=False)
     
     # Daily metrics
     daily_orders = Column(Integer)
     daily_spend = Column(Float)
     daily_items = Column(Integer)
-    points_earned = Column(Integer)
     points_used = Column(Integer)
     
     # Aggregated metrics

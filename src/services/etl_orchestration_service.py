@@ -1,5 +1,6 @@
 # File: src/services/etl_orchestration_service.py
 from datetime import datetime, timedelta
+import math
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -104,10 +105,6 @@ class ETLOrchestrator:
         Args:
             order (Order): The order to process
             datetime_key (int): The datetime key from dim_datetime
-            
-        Raises:
-            ValueError: If required dimension keys cannot be obtained
-            Exception: For any other processing errors
         """
         self.logger.info(f"Starting ETL process for order {order.id}")
         try:
@@ -174,11 +171,10 @@ class ETLOrchestrator:
                     self.logger.error(f"Failed to process payment {payment.id}: {str(payment_error)}")
                     raise
 
-            # 6. Process Customer Metrics
+            # 6. Process Customer Metrics - Updated to include order.id
             self.logger.info(f"Processing customer metrics for order {order.id}")
             await self.process_customer_metrics(
-                customer_id=order.customer_id,
-                order_date=order.creation_date,
+                order=order,
                 customer_key=customer_key
             )
 
@@ -195,23 +191,32 @@ class ETLOrchestrator:
         except Exception as e:
             self.session.rollback()
             self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
-            raise 
+            raise
 
-    async def process_customer_metrics(self, customer_id: int, order_date: datetime, customer_key: int) -> None:
-        """Process customer metrics for fact table population"""
+    async def process_customer_metrics(self, order: Order, customer_key: int) -> None:
+        """
+        Process customer metrics for fact table population
+        
+        Args:
+            order: The order being processed
+            customer_key: The surrogate key from dim_customer
+        """
         try:
             # Get datetime key for the order date
-            date_start = order_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            date_start = order.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
             datetime_key = self.datetime_service.get_datetime_key(date_start)
             
             if not datetime_key:
                 raise ValueError(f"Could not get datetime key for date {date_start}")
                 
             # Calculate daily metrics
-            daily_metrics = self._calculate_daily_customer_metrics(customer_id, order_date)
+            daily_metrics = self._calculate_daily_customer_metrics(order.customer_id, order.creation_date)
             
-            # Calculate running metrics
-            running_metrics = self._calculate_running_metrics(customer_id, order_date)
+            # Calculate running metrics - Pass the order
+            running_metrics = self._calculate_running_metrics(
+                customer_id=order.customer_id,
+                current_order=order
+            )
             
             # Combine metrics
             all_metrics = {**daily_metrics, **running_metrics}
@@ -220,26 +225,33 @@ class ETLOrchestrator:
             self.fact_service.populate_fact_customer_metrics(
                 customer_key=customer_key,
                 datetime_key=datetime_key,
-                daily_metrics=all_metrics
+                daily_metrics=all_metrics,
+                order_id=order.id
             )
             
         except Exception as e:
             self.logger.error(f"Error processing customer metrics: {str(e)}")
             raise
 
-    def _calculate_running_metrics(self, customer_id: int, current_date: datetime) -> dict:
-        """Calculate running metrics for a customer up to the given date"""
+    def _calculate_running_metrics(self, customer_id: int, current_order: Order) -> dict:
+        """
+        Calculate running metrics for a customer up to the given order
+        
+        Args:
+            customer_id: The customer ID
+            current_order: The current order being processed
+        """
         try:
             from sqlalchemy import func
             from src.database.models import Order
             
-            # Query all orders up to current date
-            orders = self.session.query(Order).filter(
+            # Query all orders up to this order, excluding orders with same timestamp
+            previous_orders = self.session.query(Order).filter(
                 Order.customer_id == customer_id,
-                Order.creation_date <= current_date
+                ((Order.creation_date < current_order.creation_date) & (Order.id != current_order.id))
             ).order_by(Order.creation_date).all()
             
-            if not orders:
+            if not previous_orders and not current_order:
                 return {
                     'running_order_count': 0,
                     'running_total_spend': 0.0,
@@ -247,21 +259,26 @@ class ETLOrchestrator:
                     'days_since_last_order': 0,
                     'order_frequency_days': 0.0
                 }
-                
-            # Calculate metrics
-            running_order_count = len(orders)
-            running_total_spend = sum(order.total for order in orders)
+            
+            # Include current order in calculations
+            all_orders = previous_orders + [current_order]
+            running_order_count = len(all_orders)
+            running_total_spend = sum(order.total for order in all_orders)
             running_avg_order_value = round(running_total_spend / running_order_count, 2)
             
-            # Calculate days since last order
-            last_order_date = orders[-1].creation_date
-            days_since_last_order = (current_date - last_order_date).days
+            # Calculate days since last order (excluding current order)
+            if previous_orders != []:
+                last_order_date = previous_orders[-1].creation_date
+                days_since_last_order = math.ceil((current_order.creation_date - last_order_date).total_seconds() / 86400)
+            else:
+                days_since_last_order = 0  # First order
             
             # Calculate average days between orders
-            if running_order_count > 1:
-                first_order_date = orders[0].creation_date
+            if len(all_orders) > 1:  # Need at least 2 orders to calculate frequency
+                first_order_date = all_orders[0].creation_date
+                last_order_date = all_orders[-1].creation_date
                 total_days = (last_order_date - first_order_date).days
-                order_frequency_days = round(total_days / (running_order_count - 1), 2)
+                order_frequency_days = round(total_days / (len(all_orders) - 1), 2)
             else:
                 order_frequency_days = 0.0
                 
@@ -275,7 +292,7 @@ class ETLOrchestrator:
             
         except Exception as e:
             self.logger.error(f"Error calculating running metrics: {str(e)}")
-            raise 
+            raise
 
     def _get_restaurant_key(self, restaurant_id: int) -> int:
         result = self.session.query(DimRestaurant.restaurant_key)\
