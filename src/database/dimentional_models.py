@@ -1,5 +1,5 @@
 # File location: src/database/dimentional_models.py
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -183,3 +183,42 @@ class FactCustomerMetrics(Base):
     running_avg_order_value = Column(Float)
     days_since_last_order = Column(Integer)
     order_frequency_days = Column(Float)  # Average days between orders
+
+class FactRestaurantMetrics(Base):
+    __tablename__ = 'fact_restaurant_metrics'
+    
+    metric_key = Column(Integer, primary_key=True)
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'), nullable=False)
+    datetime_key = Column(Integer, ForeignKey('dim_datetime.datetime_key'), nullable=False)
+    
+    # Daily order metrics
+    total_orders = Column(Integer, default=0)
+    total_revenue = Column(Float, default=0.0)
+    avg_order_value = Column(Float, default=0.0)
+    
+    # Time of day breakdown
+    breakfast_orders = Column(Integer, default=0)
+    lunch_orders = Column(Integer, default=0)
+    dinner_orders = Column(Integer, default=0)
+    
+    # Delivery metrics
+    delivery_orders = Column(Integer, default=0)
+    pickup_orders = Column(Integer, default=0)
+    
+    # Payment metrics
+    cash_payments = Column(Integer, default=0)
+    card_payments = Column(Integer, default=0)
+    digital_payments = Column(Integer, default=0)
+    
+    # Promotion metrics
+    orders_with_promotion = Column(Integer, default=0)
+    total_discount_amount = Column(Float, default=0.0)
+    
+    # Performance metrics
+    peak_hour_orders = Column(Integer, default=0)
+    peak_hour = Column(Integer)  # 0-23 representing hour of day
+    
+    # Create a unique constraint for restaurant and date combination
+    __table_args__ = (
+        UniqueConstraint('restaurant_key', 'datetime_key', name='unique_restaurant_date'),
+    )

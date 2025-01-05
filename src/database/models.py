@@ -1,5 +1,5 @@
 # File location: src/database/models.py
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -132,3 +132,16 @@ class Payment(Base):
     status = Column(Integer)
     tip = Column(Float, default=0)
     payment_method_name = Column(String(255))
+
+
+class ProcessedOrders(Base):
+    __tablename__ = 'fact_processed_orders'
+    
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, nullable=False)
+    fact_type = Column(String(50), nullable=False)  # Added this column
+    processed_date = Column(DateTime, nullable=False)
+    
+    __table_args__ = (
+        UniqueConstraint('order_id', 'fact_type', name='uq_order_fact_type'),
+    )

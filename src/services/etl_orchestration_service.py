@@ -5,6 +5,8 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import logging
+from src.services.order_processing_tracker import OrderProcessingTracker
+from src.services.restaurant_metrics_service import RestaurantMetricsService
 from src.services.fact_population_service import FactPopulationService
 from src.services.payment_method_dimension import PaymentMethodDimensionService
 from src.services.promotion_dimension import PromotionDimensionService
@@ -27,6 +29,8 @@ class ETLOrchestrator:
         self.promotion_service = PromotionDimensionService(session)
         self.payment_method_service = PaymentMethodDimensionService(session)
         self.fact_service = FactPopulationService(session)
+        self.restaurant_metrics_service = RestaurantMetricsService(session)
+        self.order_tracker = OrderProcessingTracker(session)
 
     async def initialize_dimensions(self):
         """Initialize all dimension tables with base data."""
@@ -108,14 +112,19 @@ class ETLOrchestrator:
         """
         self.logger.info(f"Starting ETL process for order {order.id}")
         try:
-            # 1. Process Restaurant Dimension
-            self.logger.info(f"Processing restaurant dimension for order {order.id}")
+            # 1. Process Restaurant Dimension - Only update if necessary
             restaurant = self.session.query(Restaurant).filter_by(id=order.restaurant_id).first()
             if not restaurant:
                 raise ValueError(f"Failed to find restaurant with id {order.restaurant_id}")
                 
-            restaurant_key = self.restaurant_service.update_restaurant_dimension(restaurant)
-            self.session.flush()
+            # Get existing restaurant key first
+            restaurant_key = self._get_restaurant_key(restaurant.id)
+            
+            # Only update restaurant dimension if we don't have a key
+            if not restaurant_key:
+                self.logger.info(f"No existing restaurant key found for {restaurant.id}, creating new dimension record")
+                restaurant_key = self.restaurant_service.update_restaurant_dimension(restaurant)
+            
             if not restaurant_key:
                 raise ValueError(f"Failed to get restaurant key for {restaurant.id}")
 
@@ -184,6 +193,12 @@ class ETLOrchestrator:
             if customer:
                 self.customer_service.update_customer_dimension(customer)
 
+            # 8. Update daily restaurant metrics
+            await self.restaurant_metrics_service.update_daily_metrics(
+                restaurant_id=order.restaurant_id,
+                date=order.creation_date
+            )
+
             # Commit all changes
             self.session.commit()
             self.logger.info(f"Successfully completed ETL process for order {order.id}")
@@ -194,44 +209,60 @@ class ETLOrchestrator:
             raise
 
     async def process_customer_metrics(self, order: Order, customer_key: int) -> None:
-        """
-        Process customer metrics for fact table population
-        
-        Args:
-            order: The order being processed
-            customer_key: The surrogate key from dim_customer
-        """
-        try:
-            # Get datetime key for the order date
-            date_start = order.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            datetime_key = self.datetime_service.get_datetime_key(date_start)
+            """
+            Process customer metrics for fact table population
             
-            if not datetime_key:
-                raise ValueError(f"Could not get datetime key for date {date_start}")
+            Args:
+                order: The order being processed
+                customer_key: The surrogate key from dim_customer
+            """
+            try:
+                # First check if this order has already been processed for customer metrics
+                if self.order_tracker.is_order_processed(
+                    order.id, 
+                    OrderProcessingTracker.FACT_TYPES['CUSTOMER_METRICS']
+                ):
+                    self.logger.info(f"Order {order.id} already processed for customer metrics. Skipping.")
+                    return
+
+                # Get datetime key for the order date
+                date_start = order.creation_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                datetime_key = self.datetime_service.get_datetime_key(date_start)
                 
-            # Calculate daily metrics
-            daily_metrics = self._calculate_daily_customer_metrics(order.customer_id, order.creation_date)
-            
-            # Calculate running metrics - Pass the order
-            running_metrics = self._calculate_running_metrics(
-                customer_id=order.customer_id,
-                current_order=order
-            )
-            
-            # Combine metrics
-            all_metrics = {**daily_metrics, **running_metrics}
-            
-            # Populate fact table
-            self.fact_service.populate_fact_customer_metrics(
-                customer_key=customer_key,
-                datetime_key=datetime_key,
-                daily_metrics=all_metrics,
-                order_id=order.id
-            )
-            
-        except Exception as e:
-            self.logger.error(f"Error processing customer metrics: {str(e)}")
-            raise
+                if not datetime_key:
+                    raise ValueError(f"Could not get datetime key for date {date_start}")
+                    
+                # Calculate daily metrics
+                daily_metrics = self._calculate_daily_customer_metrics(order.customer_id, order.creation_date)
+                
+                # Calculate running metrics
+                running_metrics = self._calculate_running_metrics(
+                    customer_id=order.customer_id,
+                    current_order=order
+                )
+                
+                # Combine metrics
+                all_metrics = {**daily_metrics, **running_metrics}
+                
+                # Populate fact table
+                self.fact_service.populate_fact_customer_metrics(
+                    customer_key=customer_key,
+                    datetime_key=datetime_key,
+                    daily_metrics=all_metrics,
+                    order_id=order.id
+                )
+                
+                # Mark the order as processed for customer metrics
+                self.order_tracker.mark_orders_processed(
+                    [order.id],
+                    OrderProcessingTracker.FACT_TYPES['CUSTOMER_METRICS']
+                )
+                
+                self.logger.info(f"Successfully processed customer metrics for order {order.id}")
+                
+            except Exception as e:
+                self.logger.error(f"Error processing customer metrics: {str(e)}")
+                raise
 
     def _calculate_running_metrics(self, customer_id: int, current_order: Order) -> dict:
         """
