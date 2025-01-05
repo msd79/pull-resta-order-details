@@ -132,7 +132,9 @@ class ETLOrchestrator:
             self.logger.info(f"Getting customer key for order {order.id}")
             customer_key = self._get_customer_key(order.customer_id)
             if not customer_key:
-                raise ValueError(f"Failed to get customer key for {order.customer_id}")
+                customer = self.session.query(Customer).get(order.customer_id)
+                if customer:
+                    self.customer_service.update_customer_dimension(customer, order.restaurant_id)  # Modified
 
             # 3. Process Promotion if exists
             promotion_key = None
@@ -163,7 +165,10 @@ class ETLOrchestrator:
             for payment in payments:
                 try:
                     # Process payment method dimension
-                    payment_method_key = self.payment_method_service.update_payment_method_dimension(payment)
+                    payment_method_key = self.payment_method_service.update_payment_method_dimension(
+                    payment, 
+                    order.restaurant_id  # NEW
+                    )
                     self.session.flush()
 
                     if not payment_method_key:
@@ -174,7 +179,9 @@ class ETLOrchestrator:
                         payment=payment,
                         order_key=order_key,
                         datetime_key=datetime_key,
-                        payment_method_key=payment_method_key
+                        payment_method_key=payment_method_key,
+                        restaurant_key=restaurant_key
+                        
                     )
                 except Exception as payment_error:
                     self.logger.error(f"Failed to process payment {payment.id}: {str(payment_error)}")
@@ -184,7 +191,8 @@ class ETLOrchestrator:
             self.logger.info(f"Processing customer metrics for order {order.id}")
             await self.process_customer_metrics(
                 order=order,
-                customer_key=customer_key
+                customer_key=customer_key,
+                restaurant_key=restaurant_key
             )
 
             # 7. Update Customer Dimension
@@ -208,7 +216,7 @@ class ETLOrchestrator:
             self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
             raise
 
-    async def process_customer_metrics(self, order: Order, customer_key: int) -> None:
+    async def process_customer_metrics(self, order: Order, customer_key: int, restaurant_key: int) -> None:
             """
             Process customer metrics for fact table population
             
@@ -249,7 +257,9 @@ class ETLOrchestrator:
                     customer_key=customer_key,
                     datetime_key=datetime_key,
                     daily_metrics=all_metrics,
-                    order_id=order.id
+                    order_id=order.id,
+                    restaurant_key=restaurant_key  # NEW
+
                 )
                 
                 # Mark the order as processed for customer metrics

@@ -46,13 +46,13 @@ class OrderSyncService:
             # Handle address for delivery orders
             address = None
             if data['OrderMethod'] == 1:  # Delivery
-                address = self._sync_address(data['CustomerAddress'])
+                address = self._sync_address(data['CustomerAddress'], restaurant.id)
             
             # Sync the order itself
             order = self._sync_order(data, restaurant, customer, address, promotion_id)
             
             # Sync payments
-            self._sync_payments(data['Payments'], order.id)
+            self._sync_payments(data['Payments'], order.id, restaurant.id)
             
             # Commit transaction
             self.session.commit()
@@ -143,7 +143,7 @@ class OrderSyncService:
             self.logger.error(f"Error syncing promotion: {str(e)}")
             raise
 
-    def _sync_address(self, address_data: dict) -> CustomerAddress:
+    def _sync_address(self, address_data: dict, restaurant_id: int) -> CustomerAddress:  # Modified
         """Sync customer address data to database."""
         try:
             address = self.session.merge(
@@ -157,7 +157,8 @@ class OrderSyncService:
                     postal_code=address_data['PostalCode'],
                     phone=address_data['Phone'],
                     latitude=address_data['Latitude'],
-                    longitude=address_data['Longitude']
+                    longitude=address_data['Longitude'],
+                    restaurant_id=restaurant_id  # NEW
                 )
             )
             return address
@@ -203,7 +204,7 @@ class OrderSyncService:
             self.logger.error(f"Error syncing order: {str(e)}")
             raise
 
-    def _sync_payments(self, payments_data: List[dict], order_id: int) -> List[Payment]:
+    def _sync_payments(self, payments_data: List[dict], order_id: int, restaurant_id: int) -> List[Payment]:  # Modified
         """Sync payment data to database."""
         try:
             payments = []
@@ -218,10 +219,11 @@ class OrderSyncService:
                         sub_total=payment_data['SubTotal'],
                         discount=payment_data.get('Discount', 0),
                         tax=payment_data.get('Tax', 0),
-                        tip=payment_data.get('Tip', 0),
                         amount=payment_data['Amount'],
                         status=payment_data['Status'],
-                        payment_method_name=payment_data['PaymentMethodName']
+                        tip=payment_data.get('Tip', 0),
+                        payment_method_name=payment_data['PaymentMethodName'],
+                        restaurant_id=restaurant_id  # NEW
                     )
                 )
                 payments.append(payment)

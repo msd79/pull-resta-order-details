@@ -12,7 +12,7 @@ class CustomerDimensionService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    def transform_customer(self, customer: Customer, metrics: Dict[str, Any]) -> DimCustomer:
+    def transform_customer(self, customer: Customer, metrics: Dict[str, Any], restaurant_id: int) -> DimCustomer:
         """Transform a Customer record into a DimCustomer record."""
         try:
             # Calculate age group
@@ -52,7 +52,8 @@ class CustomerDimensionService:
                 first_order_date=metrics.get('first_order_date'),
                 last_order_date=metrics.get('last_order_date'),
                 customer_segment=customer_segment,
-                customer_tenure_days=customer_tenure_days
+                customer_tenure_days=customer_tenure_days,
+                restaurant_id=restaurant_id
             )
         except Exception as e:
             self.logger.error(f"Error transforming customer {customer.id}: {str(e)}")
@@ -81,7 +82,7 @@ class CustomerDimensionService:
     def _determine_customer_segment(self, metrics: Dict[str, Any]) -> str:
         """Determine customer segment based on order history and value."""
         total_orders = metrics.get('total_orders', 0)
-        avg_order_value = metrics.get('avg_order_value', 0.0)
+        avg_order_value = round(metrics.get('avg_order_value', 0.0), 2)
         
         if total_orders >= 24 and avg_order_value >= 50:  # 2 orders per month and high value
             return 'VIP'
@@ -148,7 +149,7 @@ class CustomerDimensionService:
                 ).first()
             
             # Create new dimension record
-            new_record = self.transform_customer(customer, metrics)
+            new_record = self.transform_customer(customer, metrics, customer.restaurant_id)
             
             if current_record:
                 # Check if any tracked attributes have changed

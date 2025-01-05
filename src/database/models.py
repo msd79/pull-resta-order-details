@@ -1,5 +1,5 @@
 # File location: src/database/models.py
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, LargeBinary, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -36,6 +36,12 @@ class PageIndexTracker(Base):
 
 class Customer(Base):
     __tablename__ = 'customers'
+    __table_args__ = (
+        # Customer lookup by restaurant
+        Index('idx_customers_restaurant', 'restaurant_id'),
+        # Customer status queries
+        Index('idx_customers_restaurant_status', 'restaurant_id', 'status'),
+    )
     
     id = Column(Integer, primary_key=True)
     full_name = Column(String(255))
@@ -56,6 +62,10 @@ class Customer(Base):
 
 class CustomerAddress(Base):
     __tablename__ = 'customer_addresses'
+    __table_args__ = (
+        Index('idx_customer_addresses_restaurant_id', 'restaurant_id'),
+        CheckConstraint('restaurant_id IS NOT NULL', name='check_customer_addresses_restaurant_id'),
+    )
     
     id = Column(Integer, primary_key=True)
     customer_id = Column(Integer, ForeignKey('customers.id'))
@@ -68,6 +78,9 @@ class CustomerAddress(Base):
     latitude = Column(Float)
     longitude = Column(Float)
     BuildingNo = Column(String(255))
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
+
+    
 
 
 class Promotion(Base):
@@ -90,6 +103,12 @@ class Promotion(Base):
 
 class Order(Base):
     __tablename__ = 'orders'
+    __table_args__ = (
+    # Most common query pattern: orders by restaurant and date
+    Index('idx_orders_restaurant_date', 'restaurant_id', 'creation_date'),
+    # For payment status tracking
+    Index('idx_orders_payment_status', 'restaurant_id', 'payment_status'),
+    )
 
     id = Column(Integer, primary_key=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
@@ -116,9 +135,16 @@ class Order(Base):
     used_points = Column(Integer, default=0)
     total_paid = Column(Float, default=0)
     total_balance = Column(Float, default=0)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
 
 class Payment(Base):
     __tablename__ = 'payments'
+    __table_args__ = (
+        # Payment lookups by order
+        Index('idx_payments_order', 'order_id'),
+        # Payment method analysis
+        Index('idx_payments_method_restaurant', 'payment_method_id', 'restaurant_id'),
+    )
     
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey('orders.id'))
@@ -131,17 +157,19 @@ class Payment(Base):
     amount = Column(Float)
     status = Column(Integer)
     tip = Column(Float, default=0)
-    payment_method_name = Column(String(255))
+    payment_method_name = Column(String(255)),
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
 
 
 class ProcessedOrders(Base):
     __tablename__ = 'fact_processed_orders'
+    __table_args__ = (
+        # Order processing status lookup
+        Index('idx_processed_orders_type', 'order_id', 'fact_type'),
+    )
     
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, nullable=False)
     fact_type = Column(String(50), nullable=False)  # Added this column
     processed_date = Column(DateTime, nullable=False)
     
-    __table_args__ = (
-        UniqueConstraint('order_id', 'fact_type', name='uq_order_fact_type'),
-    )

@@ -1,5 +1,5 @@
 # File location: src/database/dimentional_models.py
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -8,6 +8,11 @@ Base = declarative_base()
 # Dimension Tables
 class DimDateTime(Base):
     __tablename__ = 'dim_datetime'
+    __table_args__ = (
+        # Common time-based lookups
+        Index('idx_dim_datetime_date', 'date'),
+        Index('idx_dim_datetime_year_month', 'year', 'month'),
+    )
     
     datetime_key = Column(Integer, primary_key=True)  # Surrogate key
     datetime = Column(DateTime(timezone=False), nullable=False)
@@ -35,6 +40,12 @@ class DimDateTime(Base):
 
 class DimCustomer(Base):
     __tablename__ = 'dim_customer'
+    __table_args__ = (
+        # Current customer lookup
+        Index('idx_dim_customer_current', 'customer_id', 'is_current'),
+        # Restaurant-specific customer segment analysis
+        Index('idx_dim_customer_restaurant_segment', 'restaurant_id', 'customer_segment'),
+    )
     
     customer_key = Column(Integer, primary_key=True)  # Surrogate key
     customer_id = Column(Integer, nullable=False)  # Business key
@@ -62,6 +73,7 @@ class DimCustomer(Base):
     last_order_date = Column(DateTime)
     customer_segment = Column(String(50))  # VIP, Regular, Occasional, etc.
     customer_tenure_days = Column(Integer)
+    restaurant_id = Column(Integer)
 
 class DimRestaurant(Base):
     __tablename__ = 'dim_restaurant'
@@ -106,7 +118,7 @@ class DimPromotion(Base):
 
 class DimPaymentMethod(Base):
     __tablename__ = 'dim_payment_method'
-    
+
     payment_method_key = Column(Integer, primary_key=True)  # Surrogate key
     payment_method_id = Column(Integer, nullable=False)  # Business key
     payment_method_name = Column(String(255))
@@ -115,10 +127,19 @@ class DimPaymentMethod(Base):
     is_digital = Column(Boolean)
     is_card = Column(Boolean)
     is_cash = Column(Boolean)
+    restaurant_id = Column(Integer)
+
+    
 
 # Fact Tables
 class FactOrders(Base):
     __tablename__ = 'fact_orders'
+    __table_args__ = (
+        # Time-based analysis by restaurant
+        Index('idx_fact_orders_restaurant_datetime', 'restaurant_key', 'datetime_key'),
+        # Customer analysis
+        Index('idx_fact_orders_customer', 'customer_key', 'restaurant_key'),
+    )
     
     order_key = Column(Integer, primary_key=True)
     order_id = Column(Integer, nullable=False)  # Business key
@@ -146,6 +167,10 @@ class FactOrders(Base):
 
 class FactPayments(Base):
     __tablename__ = 'fact_payments'
+    __table_args__ = (
+        Index('idx_fact_payments_restaurant_key', 'restaurant_key'),
+        CheckConstraint('restaurant_key IS NOT NULL', name='check_fact_payments_restaurant_key'),
+    )
     
     payment_key = Column(Integer, primary_key=True)
     payment_id = Column(Integer, nullable=False)  # Business key
@@ -162,9 +187,18 @@ class FactPayments(Base):
     total_amount = Column(Float, nullable=False)
     
     payment_status = Column(Integer, nullable=False)
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'))
+
+    
 
 class FactCustomerMetrics(Base):
     __tablename__ = 'fact_customer_metrics'
+    __table_args__ = (
+        # Time-series customer metrics
+        Index('idx_fact_customer_metrics_datetime', 'customer_key', 'datetime_key'),
+        # Restaurant analysis
+        Index('idx_fact_customer_metrics_restaurant', 'restaurant_key', 'datetime_key'),
+    )
     
     metric_key = Column(Integer, primary_key=True)
     order_id = Column(Integer, nullable=False, unique=True)  # Added order_id as unique identifier
@@ -183,9 +217,13 @@ class FactCustomerMetrics(Base):
     running_avg_order_value = Column(Float)
     days_since_last_order = Column(Integer)
     order_frequency_days = Column(Float)  # Average days between orders
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'))
 
 class FactRestaurantMetrics(Base):
     __tablename__ = 'fact_restaurant_metrics'
+    __table_args__ = (
+        UniqueConstraint('restaurant_key', 'datetime_key', name='unique_restaurant_date'),
+    )
     
     metric_key = Column(Integer, primary_key=True)
     restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'), nullable=False)
@@ -219,6 +257,4 @@ class FactRestaurantMetrics(Base):
     peak_hour = Column(Integer)  # 0-23 representing hour of day
     
     # Create a unique constraint for restaurant and date combination
-    __table_args__ = (
-        UniqueConstraint('restaurant_key', 'datetime_key', name='unique_restaurant_date'),
-    )
+    

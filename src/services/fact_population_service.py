@@ -53,7 +53,7 @@ class FactPopulationService:
             raise
 
     def populate_fact_payments(self, payment: Payment, order_key: int,
-                            datetime_key: int, payment_method_key: int) -> None:
+                            datetime_key: int, payment_method_key: int, restaurant_key: int) -> None:
         """
         Populate fact_payments table using the order_key from fact_orders
         """
@@ -78,7 +78,8 @@ class FactPopulationService:
                 tax=payment.tax,
                 tip=payment.tip,
                 total_amount=payment.amount,
-                payment_status=payment.status
+                payment_status=payment.status,
+                restaurant_key=restaurant_key
             )
             self.session.add(fact_payment)
             self.session.commit()
@@ -92,7 +93,8 @@ class FactPopulationService:
     def populate_fact_customer_metrics(self, customer_key: int,
                                         datetime_key: int,
                                         daily_metrics: dict,
-                                        order_id: int) -> None:  # Added order_id parameter
+                                        order_id: int,
+                                        restaurant_key: int) -> None:  # Added order_id parameter
         """
         Populate fact_customer_metrics table with order-specific metrics
         
@@ -132,7 +134,8 @@ class FactPopulationService:
                     running_total_spend=daily_metrics.get('running_total_spend', 0.0),
                     running_avg_order_value=daily_metrics.get('running_avg_order_value', 0.0),
                     days_since_last_order=daily_metrics.get('days_since_last_order', 0),
-                    order_frequency_days=daily_metrics.get('order_frequency_days', 0.0)
+                    order_frequency_days=daily_metrics.get('order_frequency_days', 0.0),
+                    restaurant_key=restaurant_key
                 )
                 self.session.add(fact_metrics)
             
