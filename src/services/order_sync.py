@@ -2,7 +2,7 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from src.database.models import Restaurant, Customer, CustomerAddress, Order, Payment, Promotion
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import logging
 
 class OrderSyncService:
@@ -232,11 +232,29 @@ class OrderSyncService:
             self.logger.error(f"Error syncing payments: {str(e)}")
             raise
 
+
+
     def _parse_date(self, date_str: Optional[str]) -> Optional[datetime]:
-        """Parse date string from API response."""
-        if not date_str or date_str == "null":
+        """Parse date string from API response.
+
+        Handles dates in '/Date(...)' format and gracefully returns None for invalid input.
+        """
+        if not date_str or date_str.lower() == "null":
             return None
-        if '/Date(' in date_str:
-            timestamp = int(date_str.replace('/Date(', '').replace(')/', ''))
-            return datetime.fromtimestamp(timestamp/1000)
+
+        try:
+            # Check if the string is in '/Date(...)' format
+            if date_str.startswith('/Date(') and date_str.endswith(')/'):
+                # Extract the timestamp and convert to seconds
+                timestamp_ms = int(date_str[6:-2])  # Removes '/Date(' and ')/'
+                timestamp_seconds = timestamp_ms / 1000
+
+                # Use timedelta for robust handling of negative timestamps
+                epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+                return epoch + timedelta(seconds=timestamp_seconds)
+        except (ValueError, TypeError):
+            # Handle invalid or malformed timestamp gracefully
+            return None
+
+        # Return None if format is not recognized
         return None

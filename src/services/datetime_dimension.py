@@ -20,14 +20,14 @@ class DateTimeDimensionService:
         
         self.day_parts = {
             'breakfast': {'start': 6, 'end': 11},    # 6 AM - 11 AM
-            'lunch': {'start': 11, 'end': 15},       # 11 AM - 3 PM
-            'dinner': {'start': 15, 'end': 23},      # 3 PM - 11 PM
+            'lunch': {'start': 12, 'end': 16},       # 11 AM - 3 PM
+            'dinner': {'start': 17, 'end': 23},      # 3 PM - 11 PM
         }
         
         self.peak_hours = [
-            {'start': 7, 'end': 9},    # Morning peak
-            {'start': 12, 'end': 14},  # Lunch peak
-            {'start': 18, 'end': 20},  # Dinner peak
+            {'start': 7, 'end': 17},    # Morning peak
+            {'start': 18, 'end': 20},  # Lunch peak
+            {'start': 21, 'end': 22},  # Dinner peak
         ]
 
     def generate_datetime_dimension(self, start_date: datetime, end_date: datetime) -> None:

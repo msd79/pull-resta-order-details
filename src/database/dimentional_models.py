@@ -54,6 +54,7 @@ class DimCustomer(Base):
     mobile = Column(String(20))
     birth_date = Column(DateTime)
     age_group = Column(String(20))
+    regitered_at = Column(DateTime)
     
     # Type 2 SCD fields
     effective_date = Column(DateTime, nullable=False)
@@ -235,9 +236,9 @@ class FactRestaurantMetrics(Base):
     avg_order_value = Column(Float, default=0.0)
     
     # Time of day breakdown
-    breakfast_orders = Column(Integer, default=0)
-    lunch_orders = Column(Integer, default=0)
-    dinner_orders = Column(Integer, default=0)
+    before_peak_orders = Column(Integer, default=0)
+    peak_orders = Column(Integer, default=0)
+    after_peak_orders = Column(Integer, default=0)
     
     # Delivery metrics
     delivery_orders = Column(Integer, default=0)
@@ -246,7 +247,7 @@ class FactRestaurantMetrics(Base):
     # Payment metrics
     cash_payments = Column(Integer, default=0)
     card_payments = Column(Integer, default=0)
-    digital_payments = Column(Integer, default=0)
+    reward_points = Column(Integer, default=0)
     
     # Promotion metrics
     orders_with_promotion = Column(Integer, default=0)

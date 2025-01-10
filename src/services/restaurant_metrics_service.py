@@ -16,9 +16,9 @@ class RestaurantMetricsService:
         self.order_tracker = OrderProcessingTracker(session)
         
         self.day_parts = {
-            'breakfast': (6, 11),
-            'lunch': (11, 15),
-            'dinner': (15, 23),
+            'before_peak': (6, 17),
+            'peak': (18, 20),
+            'after_peak': (21, 23),
         }
 
     async def update_daily_metrics(self, restaurant_id: int, date: datetime) -> None:
@@ -90,7 +90,7 @@ class RestaurantMetricsService:
         payment_counts = {
             'cash_payments': 0,
             'card_payments': 0,
-            'digital_payments': 0
+            'reward_points': 0
         }
         
         for order in orders:
@@ -99,12 +99,12 @@ class RestaurantMetricsService:
                 .all()
                 
             for payment in payments:
-                if payment.payment_method_type == 3:  # Cash
+                if payment.payment_method_type == 2:  # Cash
                     payment_counts['cash_payments'] += 1
-                elif payment.payment_method_type == 1:  # Card
+                elif payment.payment_method_type == 4:  # Card
                     payment_counts['card_payments'] += 1
-                elif payment.payment_method_type in [1, 2]:  # Digital
-                    payment_counts['digital_payments'] += 1
+                elif payment.payment_method_type == 1 :  # Digital
+                    payment_counts['reward_points'] += 1
                     
         return payment_counts
 
@@ -114,14 +114,14 @@ class RestaurantMetricsService:
             'total_orders': 0,
             'total_revenue': 0.0,
             'avg_order_value': 0.0,
-            'breakfast_orders': 0,
-            'lunch_orders': 0,
-            'dinner_orders': 0,
+            'before_peak_orders': 0,
+            'peak_orders': 0,
+            'after_peak_orders': 0,
             'delivery_orders': 0,
             'pickup_orders': 0,
             'cash_payments': 0,
             'card_payments': 0,
-            'digital_payments': 0,
+            'reward_points': 0,
             'orders_with_promotion': 0,
             'total_discount_amount': 0.0,
             'peak_hour_orders': 0,
@@ -157,9 +157,9 @@ class RestaurantMetricsService:
                 'total_revenue': sum(order.total for order in orders),
                 'avg_order_value': sum(order.total for order in orders) / len(orders),
                 
-                'breakfast_orders': self._count_orders_in_timeframe(orders, *self.day_parts['breakfast']),
-                'lunch_orders': self._count_orders_in_timeframe(orders, *self.day_parts['lunch']),
-                'dinner_orders': self._count_orders_in_timeframe(orders, *self.day_parts['dinner']),
+                'before_peak_orders': self._count_orders_in_timeframe(orders, *self.day_parts['before_peak']),
+                'peak_orders': self._count_orders_in_timeframe(orders, *self.day_parts['peak']),
+                'after_peak_orders': self._count_orders_in_timeframe(orders, *self.day_parts['after_peak']),
                 
                 'delivery_orders': sum(1 for order in orders if order.delivery_type == 1),
                 'pickup_orders': sum(1 for order in orders if order.delivery_type == 2),
