@@ -23,8 +23,8 @@ class PaymentMethodDimensionService:
                     payment_method_name=payment.payment_method_name,
                     payment_method_type=payment.payment_method_type,
                     is_digital=payment.payment_method_type in [1, 2],
-                    is_card=payment.payment_method_type == 1,
-                    is_cash=payment.payment_method_type == 3,
+                    is_card=payment.payment_method_type == 3,
+                    is_cash=payment.payment_method_type == 2,
                     requires_extra_charge=payment.extra_charge > 0,
                     restaurant_id=restaurant_id  # NEW
                 )
