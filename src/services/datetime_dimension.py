@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import logging
 from src.database.dimentional_models import DimDateTime
+import holidays
 
 class DateTimeDimensionService:
     def __init__(self, session: Session):
@@ -136,7 +137,9 @@ class DateTimeDimensionService:
     def _is_holiday(self, dt: datetime) -> bool:
         """Determine if the given date is a holiday."""
         # TODO: Implement holiday logic based on your needs
-        return False
+        uk_holidays = holidays.country_holidays('GB', subdiv='ENG')
+
+        return dt in uk_holidays
 
     def _get_fiscal_year(self, dt: datetime) -> int:
         """Get fiscal year for the date (assuming fiscal year starts July 1st)."""
