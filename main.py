@@ -207,6 +207,9 @@ class OrderSyncApplication:
             # First, sync to OLTP model
             self.logger.info(f"Starting OLTP sync for order {order_data.get('ID')}")
             order = services.sync_service.sync_order_data(order_data)
+            if order.creation_date < datetime(2020, 1, 1):
+                self.logger.info(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
+                return False
             
             # Then do ETL processing
             etl_success = await self._process_etl(order, services)
