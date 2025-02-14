@@ -14,7 +14,7 @@ class PageTrackerService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    def get_last_page_index(self, company_id: int, company_name: str) -> int:
+    def get_last_page_index(self, restaurant_id: int, restaurant_name: str) -> int:
         """
         Get the last processed page index for a company.
         Creates a new tracker if one doesn't exist.
@@ -22,7 +22,7 @@ class PageTrackerService:
         self.logger.debug("get_last_page_index...")
         try:
             tracker = self.session.query(PageIndexTracker).filter_by(
-                company_id=company_id
+                restaurant_id=restaurant_id
             ).one()
             
             if tracker.last_page_index == 1:
@@ -33,8 +33,8 @@ class PageTrackerService:
         except NoResultFound:
             # Create new tracker if doesn't exist
             new_tracker = PageIndexTracker(
-                company_id=company_id,
-                company_name=company_name,
+                restaurant_id=restaurant_id,
+                restaurant_name=restaurant_name,
                 last_page_index=1,
                 last_updated=datetime.now()
             )
@@ -42,12 +42,12 @@ class PageTrackerService:
             self.session.commit()
             return 1
 
-    def update_page_index(self, company_id: int, page_index: int) -> None:
+    def update_page_index(self, restaurant_id: int, page_index: int) -> None:
         """Update the last processed page index for a company"""
         self.logger.debug("update_page_index...")
         try:
             tracker = self.session.query(PageIndexTracker).filter_by(
-                company_id=company_id
+                restaurant_id=restaurant_id
             ).one()
             
             tracker.last_page_index = page_index
@@ -55,4 +55,4 @@ class PageTrackerService:
             self.session.commit()
             
         except NoResultFound:
-            raise ValueError(f"No tracker found for company_id: {company_id}")
+            raise ValueError(f"No tracker found for restaurant_id: {restaurant_id}")
