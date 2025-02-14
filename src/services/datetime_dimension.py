@@ -1,5 +1,3 @@
-# File: src/services/datetime_dimension.py
-
 from datetime import datetime, timedelta
 from typing import Optional, List
 from sqlalchemy.orm import Session
@@ -20,15 +18,15 @@ class DateTimeDimensionService:
         }
         
         self.day_parts = {
-            'breakfast': {'start': 6, 'end': 11},    # 6 AM - 11 AM
-            'lunch': {'start': 12, 'end': 16},       # 11 AM - 3 PM
-            'dinner': {'start': 17, 'end': 23},      # 3 PM - 11 PM
+            'breakfast': {'start': 6, 'end': 11},  # 6 AM - 11 AM
+            'lunch': {'start': 12, 'end': 16},      # 12 PM - 4 PM
+            'dinner': {'start': 17, 'end': 23},       # 5 PM - 11 PM
         }
         
         self.peak_hours = [
-            {'start': 7, 'end': 17},    # Morning peak
-            {'start': 18, 'end': 20},  # Lunch peak
-            {'start': 21, 'end': 22},  # Dinner peak
+            {'start': 7, 'end': 17},   # Morning peak
+            {'start': 18, 'end': 20},  # Afternoon peak
+            {'start': 21, 'end': 22},  # Evening peak
         ]
 
     def generate_datetime_dimension(self, start_date: datetime, end_date: datetime) -> None:
@@ -83,12 +81,10 @@ class DateTimeDimensionService:
 
     def _create_datetime_record(self, dt: datetime) -> DimDateTime:
         """Create a single datetime dimension record."""
-        # Convert the date field to datetime to avoid timezone issues
-        date_as_datetime = datetime.combine(dt.date(), datetime.min.time())
         
         return DimDateTime(
             datetime=dt,
-            date=date_as_datetime,
+            date=dt.date(),
             year=dt.year,
             quarter=((dt.month - 1) // 3) + 1,
             month=dt.month,
@@ -102,9 +98,10 @@ class DateTimeDimensionService:
             day_part=self._get_day_part(dt.hour),
             is_peak_hour=self._is_peak_hour(dt.hour),
             is_business_hour=self._is_business_hour(dt.hour),
-            fiscal_year=self._get_fiscal_year(dt),
-            fiscal_quarter=self._get_fiscal_quarter(dt),
-            fiscal_month=self._get_fiscal_month(dt)
+            year_month=dt.year * 100 + dt.month,          # e.g., 202001
+            month_name=dt.strftime("%b"),  # e.g., "Jan"                  # e.g., "January"
+            day_name=dt.strftime("%a"),    # e.g., "Mon"                    # e.g., "Monday"
+            year_month_label=dt.strftime("%Y-%m")           # e.g., "2020-01"
         )
 
     def _save_batch(self, batch: List[DimDateTime]) -> None:
@@ -138,27 +135,7 @@ class DateTimeDimensionService:
         """Determine if the given date is a holiday."""
         # TODO: Implement holiday logic based on your needs
         uk_holidays = holidays.country_holidays('GB', subdiv='ENG')
-
         return dt in uk_holidays
-
-    def _get_fiscal_year(self, dt: datetime) -> int:
-        """Get fiscal year for the date (assuming fiscal year starts July 1st)."""
-        if dt.month >= 7:
-            return dt.year
-        return dt.year - 1
-
-    def _get_fiscal_quarter(self, dt: datetime) -> int:
-        """Get fiscal quarter for the date."""
-        month = dt.month
-        if month >= 7:
-            return ((month - 7) // 3) + 1
-        return ((month + 5) // 3) + 1
-
-    def _get_fiscal_month(self, dt: datetime) -> int:
-        """Get fiscal month for the date."""
-        if dt.month >= 7:
-            return dt.month - 6
-        return dt.month + 6
 
     def get_datetime_key(self, dt: datetime) -> Optional[int]:
         """Get the surrogate key for a given datetime."""
@@ -167,7 +144,7 @@ class DateTimeDimensionService:
                 self.logger.error("Received null datetime")
                 return None
                 
-            # Round to nearest hour
+            # Round to the nearest hour
             dt = dt.replace(minute=0, second=0, microsecond=0)
             
             self.logger.debug(f"Looking for datetime key for: {dt}")

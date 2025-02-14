@@ -16,7 +16,7 @@ class DimDateTime(Base):
     
     datetime_key = Column(Integer, primary_key=True)  # Surrogate key
     datetime = Column(DateTime(timezone=False), nullable=False)
-    date = Column(DateTime(timezone=False), nullable=False)  # Explicitly set timezone=False
+    date = Column(Date, nullable=False) # Explicitly set timezone=False
     year = Column(SmallInteger, nullable=False)
     quarter = Column(SmallInteger, nullable=False)
     month = Column(SmallInteger, nullable=False)
@@ -33,10 +33,11 @@ class DimDateTime(Base):
     is_peak_hour = Column(Boolean, nullable=False)
     is_business_hour = Column(Boolean, nullable=False)
     
-    # Time intelligence support
-    fiscal_year = Column(SmallInteger, nullable=False)
-    fiscal_quarter = Column(SmallInteger, nullable=False)
-    fiscal_month = Column(SmallInteger, nullable=False)
+    # New fields
+    year_month = Column(Integer, nullable=False)         # e.g., 202001
+    month_name = Column(String(10), nullable=False)        # e.g., "January"
+    day_name = Column(String(10), nullable=False)          # e.g., "Monday"
+    year_month_label = Column(String(7), nullable=False)   # e.g., "2020-01"
 
 class DimCustomer(Base):
     __tablename__ = 'dim_customer'
