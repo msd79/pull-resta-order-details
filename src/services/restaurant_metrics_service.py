@@ -184,10 +184,7 @@ class RestaurantMetricsService:
 
     async def _update_fact_table(self, restaurant_id: int, date: datetime, metrics: dict) -> None:
         restaurant_dim = self.session.query(DimRestaurant)\
-            .filter(
-                DimRestaurant.restaurant_id == restaurant_id,
-                DimRestaurant.is_current == True
-            ).first()
+            .filter( DimRestaurant.restaurant_id == restaurant_id ).first()
         
         if not restaurant_dim:
             raise ValueError(f"No current restaurant dimension record found for ID {restaurant_id}")

@@ -84,16 +84,17 @@ class DimRestaurant(Base):
     restaurant_name = Column(String(255))
     company_id = Column(Integer)
     company_name = Column(String(128))
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # Type 2 SCD fields
-    effective_date = Column(DateTime, nullable=False)
-    expiration_date = Column(DateTime)
-    is_current = Column(Boolean, nullable=False)
+    # effective_date = Column(DateTime, nullable=False)
+    # expiration_date = Column(DateTime)
+    # is_current = Column(Boolean, nullable=False)
     
-    # Performance metrics
-    avg_daily_orders = Column(Float)
-    avg_order_value = Column(Float)
-    peak_hour_capacity = Column(Integer)
+    # # Performance metrics
+    # avg_daily_orders = Column(Float)
+    # avg_order_value = Column(Float)
+    # peak_hour_capacity = Column(Integer)
 
 class DimPromotion(Base):
     __tablename__ = 'dim_promotion'
