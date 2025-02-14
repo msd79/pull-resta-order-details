@@ -39,7 +39,8 @@ class FactPopulationService:
                 service_charge=order.service_charge,
                 total_discount=order.discount,
                 total=order.total,
-                used_points=order.used_points
+                used_points=order.used_points,
+                is_promotion_applied=True if promotion_key is not None else False
             )
             self.session.add(fact_order)
             self.session.flush()  # This will populate the order_key

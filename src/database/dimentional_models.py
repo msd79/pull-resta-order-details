@@ -168,6 +168,8 @@ class FactOrders(Base):
     # Additional metrics
     used_points = Column(Integer)
 
+    is_promotion_applied = Column(Boolean, default=False, nullable=False)
+
 class FactPayments(Base):
     __tablename__ = 'fact_payments'
     __table_args__ = (
