@@ -224,7 +224,8 @@ class OrderSyncApplication:
                 
                 if customer:
                     self.logger.info(f"Starting customer dimension update for customer {customer.id}")
-                    services.etl_orchestrator.customer_service.update_customer_dimension(customer)
+                    restaurant_key = services.api_client.restaurant_id
+                    services.etl_orchestrator.customer_service.update_customer_dimension(customer, restaurant_key)
                     self.logger.info(f"Successfully updated customer dimension for customer {customer.id}")
                 else:
                     self.logger.error(f"Could not find customer record for ID {order.customer_id}")
@@ -351,8 +352,8 @@ class OrderSyncApplication:
                 return None  # Or log the error and raise a custom exception
             
             current_page = services.page_tracker.get_last_page_index(
-                company_id=company_id,
-                company_name=restaurant_user.company_name
+                restaurant_id=services.api_client.restaurant_id,
+                restaurant_name=services.api_client.restaurant_name
             )
 
             while self.state.is_running:
@@ -365,7 +366,7 @@ class OrderSyncApplication:
                 if not has_more_pages:
                     break
                 
-                services.page_tracker.update_page_index(company_id, current_page)
+                services.page_tracker.update_page_index(services.api_client.restaurant_id, current_page)
                 current_page += 1
                 await asyncio.sleep(self.config.sync.delay_between_pages)
 
