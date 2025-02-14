@@ -1,5 +1,5 @@
 # File location: src/database/dimentional_models.py
-from sqlalchemy import CheckConstraint, Column, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, Date, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -45,10 +45,11 @@ class DimCustomer(Base):
         # Current customer lookup
         Index('idx_dim_customer_current', 'customer_id', 'is_current'),
         # Restaurant-specific customer segment analysis
-        Index('idx_dim_customer_restaurant_segment', 'restaurant_id', 'customer_segment'),
+        Index('idx_dim_customer_restaurant_segment', 'restaurant_key', 'customer_segment'),
     )
     
     customer_key = Column(Integer, primary_key=True)  # Surrogate key
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'), nullable=False)
     customer_id = Column(Integer, nullable=False)  # Business key
     full_name = Column(String(255))
     email = Column(String(255))
@@ -63,7 +64,7 @@ class DimCustomer(Base):
     is_current = Column(Boolean, nullable=False)
     
     # Customer status and preferences
-    is_active = Column(Boolean, nullable=False)
+ 
     is_email_marketing_allowed = Column(Boolean)
     is_sms_marketing_allowed = Column(Boolean)
     
@@ -75,7 +76,6 @@ class DimCustomer(Base):
     last_order_date = Column(DateTime)
     customer_segment = Column(String(50))  # VIP, Regular, Occasional, etc.
     customer_tenure_days = Column(Integer)
-    restaurant_id = Column(Integer)
 
 class DimRestaurant(Base):
     __tablename__ = 'dim_restaurant'
@@ -213,7 +213,6 @@ class FactCustomerMetrics(Base):
     # Daily metrics
     daily_orders = Column(Integer)
     daily_spend = Column(Float)
-    daily_items = Column(Integer)
     points_used = Column(Integer)
     
     # Aggregated metrics

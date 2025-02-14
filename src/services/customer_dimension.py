@@ -12,7 +12,7 @@ class CustomerDimensionService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    def transform_customer(self, customer: Customer, metrics: Dict[str, Any], restaurant_id: int) -> DimCustomer:
+    def transform_customer(self, customer: Customer, metrics: Dict[str, Any], restaurant_key: int) -> DimCustomer:
         """Transform a Customer record into a DimCustomer record."""
         try:
             # Calculate age group
@@ -41,7 +41,6 @@ class CustomerDimensionService:
                 is_current=True,
                 
                 # Status and preferences
-                is_active=bool(customer.status == 1),  # Assuming status 1 is active
                 is_email_marketing_allowed=customer.is_email_marketing_allowed,
                 is_sms_marketing_allowed=customer.is_sms_marketing_allowed,
                 
@@ -53,7 +52,7 @@ class CustomerDimensionService:
                 last_order_date=metrics.get('last_order_date'),
                 customer_segment=customer_segment,
                 customer_tenure_days=customer_tenure_days,
-                restaurant_id=restaurant_id
+                restaurant_key=restaurant_key,
             )
         except Exception as e:
             self.logger.error(f"Error transforming customer {customer.id}: {str(e)}")
@@ -88,7 +87,7 @@ class CustomerDimensionService:
             return 'VIP'
         elif total_orders >= 12:  # 1 order per month
             return 'Regular'
-        elif total_orders >= 4:   # Quarterly orders
+        elif total_orders >= 3:   # Quarterly orders
             return 'Occasional'
         else:
             return 'New'
@@ -133,7 +132,7 @@ class CustomerDimensionService:
             self.logger.error(f"Error calculating customer metrics: {str(e)}")
             raise
 
-    def update_customer_dimension(self, customer: Customer) -> None:
+    def update_customer_dimension(self, customer: Customer, restaurant_key: int) -> None:
         """Update customer dimension with change tracking (Type 2 SCD)."""
         try:
             self.logger.info(f"Starting customer dimension update for customer ID: {customer.id}")
@@ -149,7 +148,7 @@ class CustomerDimensionService:
                 ).first()
             
             # Create new dimension record
-            new_record = self.transform_customer(customer, metrics, customer.restaurant_id)
+            new_record = self.transform_customer(customer, metrics, restaurant_key)
             
             if current_record:
                 # Check if any tracked attributes have changed

@@ -129,7 +129,6 @@ class FactPopulationService:
                     datetime_key=datetime_key,
                     daily_orders=daily_metrics.get('daily_orders', 0),
                     daily_spend=daily_metrics.get('daily_spend', 0.0),
-                    daily_items=daily_metrics.get('daily_items', 0),
                     points_used=daily_metrics.get('points_used', 0),
                     running_order_count=daily_metrics.get('running_order_count', 0),
                     running_total_spend=daily_metrics.get('running_total_spend', 0.0),

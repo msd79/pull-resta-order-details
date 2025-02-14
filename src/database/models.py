@@ -29,8 +29,8 @@ class Restaurant(Base):
 class PageIndexTracker(Base):
     __tablename__ = 'page_index_tracker'
     
-    company_id = Column(Integer, primary_key=True)
-    company_name = Column(String(255))
+    restaurant_id = Column(Integer, primary_key=True)
+    restaurant_name = Column(String(255))
     last_page_index = Column(Integer, nullable=False)
     last_updated = Column(String(50))
 
@@ -157,7 +157,7 @@ class Payment(Base):
     amount = Column(Float)
     status = Column(Integer)
     tip = Column(Float, default=0)
-    payment_method_name = Column(String(255)),
+    payment_method_name = Column(String(255))
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
 
 

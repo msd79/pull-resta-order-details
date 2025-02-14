@@ -134,7 +134,7 @@ class ETLOrchestrator:
             if not customer_key:
                 customer = self.session.query(Customer).get(order.customer_id)
                 if customer:
-                    self.customer_service.update_customer_dimension(customer, order.restaurant_id)  # Modified
+                    self.customer_service.update_customer_dimension(customer, restaurant_key)  # Modified
 
             # 3. Process Promotion if exists
             promotion_key = None
@@ -142,7 +142,7 @@ class ETLOrchestrator:
                 self.logger.info(f"Processing promotion for order {order.id}")
                 promotion = self.session.query(Promotion).get(order.promotion_id)
                 if promotion:
-                    promotion_key = self.promotion_service.update_promotion_dimension(promotion)
+                    promotion_key = self.promotion_service.update_promotion_dimension(promotion, restaurant_key)
                 self.session.flush()
 
             # 4. Populate fact_orders and get the order_key
@@ -199,7 +199,7 @@ class ETLOrchestrator:
             self.logger.info(f"Updating customer dimension for order {order.id}")
             customer = self.session.query(Customer).get(order.customer_id)
             if customer:
-                self.customer_service.update_customer_dimension(customer)
+                self.customer_service.update_customer_dimension(customer, restaurant_key)
 
             # 8. Update daily restaurant metrics
             await self.restaurant_metrics_service.update_daily_metrics(
@@ -337,7 +337,7 @@ class ETLOrchestrator:
 
     def _get_restaurant_key(self, restaurant_id: int) -> int:
         result = self.session.query(DimRestaurant.restaurant_key)\
-            .filter_by(restaurant_id=restaurant_id, is_current=True)\
+            .filter_by(restaurant_id=restaurant_id, is_active=True)\
             .first()
         return result[0] if result else None
 
@@ -349,8 +349,9 @@ class ETLOrchestrator:
             self.logger.error(f"No customer dimension record found for customer_id {customer_id}")
             # Create the customer dimension record here
             customer = self.session.query(Customer).get(customer_id)
+            restaurant_key = self._get_restaurant_key(customer.restaurant_id)
             if customer:
-                self.customer_service.update_customer_dimension(customer)
+                self.customer_service.update_customer_dimension(customer, restaurant_key )
                 # Try again to get the key
                 result = self.session.query(DimCustomer.customer_key)\
                     .filter_by(customer_id=customer_id, is_current=True)\
@@ -383,7 +384,6 @@ class ETLOrchestrator:
         daily_metrics = {
             'daily_orders': len(daily_orders),
             'daily_spend': sum(order.total for order in daily_orders),
-            'daily_items': sum(order.number_of_orders for order in daily_orders),
             'points_used': sum(order.used_points for order in daily_orders),
             # Add other metrics calculations as needed
         }
