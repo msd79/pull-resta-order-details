@@ -10,6 +10,9 @@ class RestaAPI:
         self.page_size = page_size
         self.session_token = None
         self.company_id = None
+        self.restaurant_id = None
+        self.company_name = None
+        self.restaurant_name = None
         self.logger = logging.getLogger(__name__)
         self._session = None
 
@@ -76,8 +79,13 @@ class RestaAPI:
                 else:
                     # Fallback to getting company_id from response
                     self.company_id = data.get('Company', {}).get('ID')
+
                     if not self.company_id:
                         raise Exception("Could not find company ID in response or token")
+                self.restaurant_id = data.get('Restaurant', {}).get('ID')
+                self.restaurant_name = data.get('Restaurant', {}).get('Name')
+                self.company_name = data.get('Company', {}).get('Name')
+                
                 
                 return self.session_token, self.company_id
                 
