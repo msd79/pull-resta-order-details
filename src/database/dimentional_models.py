@@ -116,7 +116,7 @@ class DimPromotion(Base):
     is_first_order_only = Column(Boolean)
     is_once_per_customer = Column(Boolean)
     company_id = Column(Integer)
-    restaurant_id = Column(Integer)
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'), nullable=False)
 
 class DimPaymentMethod(Base):
     __tablename__ = 'dim_payment_method'

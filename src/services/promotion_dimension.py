@@ -11,7 +11,7 @@ class PromotionDimensionService:
         self.session = session
         self.logger = logging.getLogger(__name__)
 
-    def update_promotion_dimension(self, promotion: Promotion) -> Optional[int]:
+    def update_promotion_dimension(self, promotion: Promotion, restaurant_key: int) -> Optional[int]:
             """
             Update promotion dimension and return the promotion key.
             
@@ -41,7 +41,8 @@ class PromotionDimensionService:
                         is_first_order_only=promotion.onlyFirstOrder,
                         is_once_per_customer=promotion.oncePerCustomer,
                         company_id=promotion.companyID,
-                        restaurant_id=promotion.restaurant_id
+                        restaurant_key=restaurant_key,
+
                     )
                     self.session.add(dim_promotion)
                     self.session.flush()  # This ensures the key is generated
