@@ -330,10 +330,22 @@ class OrderSyncApplication:
                 return
             
             # Login with restaurant credentials
-            session_token, company_id = await services.api_client.login(
-                email=credentials.get('username'),
-                password=credentials.get('password')
-            )
+            try:
+                session_token, company_id= await services.api_client.login(
+                    email=credentials.get('username', ''),
+                    password=credentials.get('password', '')
+                )
+
+                if not session_token:
+                    raise ValueError("Login failed: No session token returned.")
+
+            except KeyError as e:
+                print(f"Missing credential key: {e}")
+                return None  # Handle missing credentials properly
+
+            except Exception as e:
+                print(f"Login error: {e}")
+                return None  # Or log the error and raise a custom exception
             
             current_page = services.page_tracker.get_last_page_index(
                 company_id=company_id,
