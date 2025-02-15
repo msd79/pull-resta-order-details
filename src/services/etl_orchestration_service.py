@@ -358,17 +358,17 @@ class ETLOrchestrator:
                     .first()
         return result[0] if result else None
 
-    def _get_promotion_key(self, promotion_id: int) -> int:
-        result = self.session.query(DimPromotion.promotion_key)\
-            .filter_by(promotion_id=promotion_id)\
-            .first()
-        return result[0] if result else None
+    # def _get_promotion_key(self, promotion_id: int) -> int:
+    #     result = self.session.query(DimPromotion.promotion_key)\
+    #         .filter_by(promotion_id=promotion_id)\
+    #         .first()
+    #     return result[0] if result else None
 
-    def _get_payment_method_key(self, payment_method_id: int) -> int:
-        result = self.session.query(DimPaymentMethod.payment_method_key)\
-            .filter_by(payment_method_id=payment_method_id)\
-            .first()
-        return result[0] if result else None
+    # def _get_payment_method_key(self, payment_method_id: int) -> int:
+    #     result = self.session.query(DimPaymentMethod.payment_method_key)\
+    #         .filter_by(payment_method_id=payment_method_id)\
+    #         .first()
+    #     return result[0] if result else None
 
     def _calculate_daily_customer_metrics(self, customer_id: int, order_date: datetime) -> dict:
         # Calculate daily metrics for the customer
