@@ -112,41 +112,30 @@ class ETLOrchestrator:
         """
         self.logger.info(f"Starting ETL process for order {order.id}")
         try:
-            # 1. Process Restaurant Dimension - Only update if necessary
+            # 1. Get or Create Restaurant Dimension
             restaurant = self.session.query(Restaurant).filter_by(id=order.restaurant_id).first()
             if not restaurant:
                 raise ValueError(f"Failed to find restaurant with id {order.restaurant_id}")
-                
-            # Get existing restaurant key first
             restaurant_key = self._get_restaurant_key(restaurant.id)
-            
-            # Only update restaurant dimension if we don't have a key
             if not restaurant_key:
-                self.logger.info(f"No existing restaurant key found for {restaurant.id}, creating new dimension record")
                 restaurant_key = self.restaurant_service.update_restaurant_dimension(restaurant)
-            
-            if not restaurant_key:
-                raise ValueError(f"Failed to get restaurant key for {restaurant.id}")
+                if not restaurant_key:
+                    raise ValueError(f"Failed to create restaurant dimension for {restaurant.id}")
 
-            # 2. Get Customer Key
+            # 2. Get or Create Customer Dimension (Single function call, no duplication)
             self.logger.info(f"Getting customer key for order {order.id}")
-            customer_key = self._get_customer_key(order.customer_id)
+            customer_key = self._get_or_create_customer_ke(order.customer_id, restaurant_key)
             if not customer_key:
-                customer = self.session.query(Customer).get(order.customer_id)
-                if customer:
-                    self.customer_service.update_customer_dimension(customer, restaurant_key)  # Modified
+                raise ValueError(f"Failed to get or create customer key for order {order.id}")
 
             # 3. Process Promotion if exists
             promotion_key = None
             if order.promotion_id:
-                self.logger.info(f"Processing promotion for order {order.id}")
                 promotion = self.session.query(Promotion).get(order.promotion_id)
                 if promotion:
                     promotion_key = self.promotion_service.update_promotion_dimension(promotion, restaurant_key)
-                self.session.flush()
 
-            # 4. Populate fact_orders and get the order_key
-            self.logger.info(f"Populating fact_orders for order {order.id}")
+            # 4. Populate fact_orders (returns order_key)
             order_key = self.fact_service.populate_fact_orders(
                 order=order,
                 datetime_key=datetime_key,
@@ -154,49 +143,27 @@ class ETLOrchestrator:
                 restaurant_key=restaurant_key,
                 promotion_key=promotion_key
             )
-            
             if not order_key:
                 raise ValueError(f"Failed to get order key for order {order.id}")
 
             # 5. Process Payments
             payments = self.session.query(Payment).filter_by(order_id=order.id).all()
-            self.logger.info(f"Processing {len(payments)} payments for order {order.id}")
-            
             for payment in payments:
-                try:
-                    # Process payment method dimension
-                    payment_method_key = self.payment_method_service.update_payment_method_dimension(
-                    payment, 
-                    order.restaurant_id  # NEW
-                    )
-                    self.session.flush()
+                payment_method_key = self.payment_method_service.update_payment_method_dimension(payment, order.restaurant_id)
+                if not payment_method_key:
+                    raise ValueError(f"Failed to get payment method key for payment {payment.id}")
+                self.fact_service.populate_fact_payments(
+                    payment=payment,
+                    order_key=order_key,
+                    datetime_key=datetime_key,
+                    payment_method_key=payment_method_key,
+                    restaurant_key=restaurant_key
+                )
 
-                    if not payment_method_key:
-                        raise ValueError(f"Failed to get payment method key for payment {payment.id}")
+            # 6. Process Customer Metrics
+            await self.process_customer_metrics(order=order, customer_key=customer_key, restaurant_key=restaurant_key)
 
-                    # Populate fact_payments
-                    self.fact_service.populate_fact_payments(
-                        payment=payment,
-                        order_key=order_key,
-                        datetime_key=datetime_key,
-                        payment_method_key=payment_method_key,
-                        restaurant_key=restaurant_key
-                        
-                    )
-                except Exception as payment_error:
-                    self.logger.error(f"Failed to process payment {payment.id}: {str(payment_error)}")
-                    raise
-
-            # 6. Process Customer Metrics - Updated to include order.id
-            self.logger.info(f"Processing customer metrics for order {order.id}")
-            await self.process_customer_metrics(
-                order=order,
-                customer_key=customer_key,
-                restaurant_key=restaurant_key
-            )
-
-            # 7. Update Customer Dimension
-            self.logger.info(f"Updating customer dimension for order {order.id}")
+            # 7. (Optional) Update Customer Dimension again if you truly have new data 
             customer = self.session.query(Customer).get(order.customer_id)
             if customer:
                 self.customer_service.update_customer_dimension(customer, restaurant_key)
@@ -207,7 +174,7 @@ class ETLOrchestrator:
                 date=order.creation_date
             )
 
-            # Commit all changes
+            # Commit changes
             self.session.commit()
             self.logger.info(f"Successfully completed ETL process for order {order.id}")
 
@@ -215,6 +182,7 @@ class ETLOrchestrator:
             self.session.rollback()
             self.logger.error(f"Failed ETL process for order {order.id}: {str(e)}", exc_info=True)
             raise
+
 
     async def process_customer_metrics(self, order: Order, customer_key: int, restaurant_key: int) -> None:
             """
@@ -341,22 +309,35 @@ class ETLOrchestrator:
             .first()
         return result[0] if result else None
 
-    def _get_customer_key(self, customer_id: int) -> int:
+    def _get_or_create_customer_ke(self, customer_id: int, restaurant_key: int) -> Optional[int]:
+        """
+        Safely get (and if needed, create) the customer dimension key.
+        """
+        # First, check if there is an existing record
         result = self.session.query(DimCustomer.customer_key)\
             .filter_by(customer_id=customer_id, is_current=True)\
             .first()
-        if not result:
-            self.logger.error(f"No customer dimension record found for customer_id {customer_id}")
-            # Create the customer dimension record here
-            customer = self.session.query(Customer).get(customer_id)
-            restaurant_key = self._get_restaurant_key(customer.restaurant_id)
-            if customer:
-                self.customer_service.update_customer_dimension(customer, restaurant_key )
-                # Try again to get the key
-                result = self.session.query(DimCustomer.customer_key)\
-                    .filter_by(customer_id=customer_id, is_current=True)\
-                    .first()
-        return result[0] if result else None
+        if result:
+            return result[0]
+
+        # If we didn't find anything, we create it
+        self.logger.info(f"No customer dimension record found for customer_id {customer_id}. Creating new one.")
+        
+        customer = self.session.query(Customer).get(customer_id)
+        if not customer:
+            self.logger.error(f"Could not retrieve Customer with ID {customer_id}")
+            return None
+        
+        self.customer_service.update_customer_dimension(customer, restaurant_key)
+        self.session.flush()  # Make sure the newly inserted dimension row is visible
+
+        # Try again
+        result2 = self.session.query(DimCustomer.customer_key)\
+            .filter_by(customer_id=customer_id, is_current=True)\
+            .first()
+
+        return result2[0] if result2 else None
+
 
     # def _get_promotion_key(self, promotion_id: int) -> int:
     #     result = self.session.query(DimPromotion.promotion_key)\
