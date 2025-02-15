@@ -16,12 +16,12 @@ class RestaurantMetricsService:
         self.order_tracker = OrderProcessingTracker(session)
         
         self.day_parts = {
-            'before_peak': (6, 17),
-            'peak': (18, 20),
-            'after_peak': (21, 23),
+            'before_peak': (6, 18),
+            'peak': (18, 21),
+            'after_peak': (21, 24),
         }
 
-    async def update_daily_metrics(self, restaurant_id: int, date: datetime) -> None:
+    def update_daily_metrics(self, restaurant_id: int, date: datetime) -> None:
         try:
             start_date = date.replace(hour=0, minute=0, second=0, microsecond=0)
             end_date = start_date + timedelta(days=1)
@@ -49,10 +49,10 @@ class RestaurantMetricsService:
                 return
             
             # Calculate metrics using all orders for completeness
-            metrics = await self._calculate_daily_metrics(restaurant_id, start_date, orders)
+            metrics = self._calculate_daily_metrics(restaurant_id, start_date, orders)
             
             # Update fact table
-            await self._update_fact_table(restaurant_id, date, metrics)
+            self._update_fact_table(restaurant_id, date, metrics)
             
             # Mark orders as processed
             self.order_tracker.mark_orders_processed(
@@ -86,27 +86,38 @@ class RestaurantMetricsService:
         }
 
     async def _calculate_payment_metrics(self, orders: List[Order]) -> Dict:
-        """Calculate payment-related metrics for the given orders."""
+        """
+        Calculate payment-related metrics for the given orders, avoiding
+        an N+1 query by loading all necessary payments in one pass.
+        """
         payment_counts = {
             'cash_payments': 0,
             'card_payments': 0,
             'reward_points': 0
         }
         
-        for order in orders:
-            payments = self.session.query(Payment)\
-                .filter(Payment.order_id == order.id)\
-                .all()
-                
-            for payment in payments:
-                if payment.payment_method_type == 2:  # Cash
-                    payment_counts['cash_payments'] += 1
-                elif payment.payment_method_type == 4:  # Card
-                    payment_counts['card_payments'] += 1
-                elif payment.payment_method_type == 1 :  # Digital
-                    payment_counts['reward_points'] += 1
-                    
+        if not orders:
+            return payment_counts
+
+        # 1) Collect all order IDs
+        order_ids = [o.id for o in orders]
+
+        # 2) Fetch payments for all those orders at once
+        payments = self.session.query(Payment).filter(
+            Payment.order_id.in_(order_ids)
+        ).all()
+
+        # 3) Aggregate payment type counts
+        for payment in payments:
+            if payment.payment_method_type == 2:    # Cash
+                payment_counts['cash_payments'] += 1
+            elif payment.payment_method_type == 4:  # Card
+                payment_counts['card_payments'] += 1
+            elif payment.payment_method_type == 1:  # Digital
+                payment_counts['reward_points'] += 1
+
         return payment_counts
+
 
     def _get_empty_metrics(self) -> Dict:
         """Return a dictionary of metrics initialized to zero."""
