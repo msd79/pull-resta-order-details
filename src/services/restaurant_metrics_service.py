@@ -21,7 +21,7 @@ class RestaurantMetricsService:
             'after_peak': (21, 24),
         }
 
-    def update_daily_metrics(self, restaurant_id: int, date: datetime) -> None:
+    async def update_daily_metrics(self, restaurant_id: int, date: datetime) -> None:
         try:
             start_date = date.replace(hour=0, minute=0, second=0, microsecond=0)
             end_date = start_date + timedelta(days=1)
@@ -49,10 +49,10 @@ class RestaurantMetricsService:
                 return
             
             # Calculate metrics using all orders for completeness
-            metrics = self._calculate_daily_metrics(restaurant_id, start_date, orders)
+            metrics = await self._calculate_daily_metrics(restaurant_id, start_date, orders)
             
             # Update fact table
-            self._update_fact_table(restaurant_id, date, metrics)
+            await self._update_fact_table(restaurant_id, date, metrics)
             
             # Mark orders as processed
             self.order_tracker.mark_orders_processed(
