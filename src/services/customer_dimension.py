@@ -15,19 +15,24 @@ class CustomerDimensionService:
     def transform_customer(self, customer: Customer, metrics: Dict[str, Any], restaurant_key: int) -> DimCustomer:
         """Transform a Customer record into a DimCustomer record."""
         try:
+            self.logger.debug(f"Starting transformation for customer ID: {customer.id}")
+            
             # Calculate age group
             age_group = self._calculate_age_group(customer.birth_date) if customer.birth_date else 'Unknown'
+            self.logger.debug(f"Calculated age group for customer {customer.id}: {age_group}")
             
             # Calculate customer segment based on metrics
             customer_segment = self._determine_customer_segment(metrics)
+            self.logger.debug(f"Determined customer segment for customer {customer.id}: {customer_segment}")
             
             # Calculate customer tenure
             customer_tenure_days = self._calculate_tenure_days(
                 metrics.get('first_order_date'),
                 metrics.get('last_order_date')
             )
+            self.logger.debug(f"Calculated tenure for customer {customer.id}: {customer_tenure_days} days")
             
-            return DimCustomer(
+            dim_customer = DimCustomer(
                 customer_id=customer.id,
                 full_name=customer.full_name,
                 email=customer.email,
@@ -54,8 +59,10 @@ class CustomerDimensionService:
                 customer_tenure_days=customer_tenure_days,
                 restaurant_key=restaurant_key,
             )
+            self.logger.debug(f"Successfully created dimension record for customer {customer.id}")
+            return dim_customer
         except Exception as e:
-            self.logger.error(f"Error transforming customer {customer.id}: {str(e)}")
+            self.logger.error(f"Error transforming customer {customer.id}: {str(e)}", exc_info=True)
             raise
 
     def _calculate_age_group(self, birth_date: datetime) -> str:
@@ -64,6 +71,7 @@ class CustomerDimensionService:
             return 'Unknown'
             
         age = (datetime.now() - birth_date).days // 365
+        self.logger.debug(f"Calculated age: {age} years from birth date: {birth_date}")
         
         if age < 18:
             return 'Under 18'
@@ -83,6 +91,8 @@ class CustomerDimensionService:
         total_orders = metrics.get('total_orders', 0)
         avg_order_value = round(metrics.get('avg_order_value', 0.0), 2)
         
+        self.logger.debug(f"Determining segment with total_orders={total_orders}, avg_order_value=${avg_order_value}")
+        
         if total_orders >= 24 and avg_order_value >= 50:  # 2 orders per month and high value
             return 'VIP'
         elif total_orders >= 12:  # 1 order per month
@@ -96,14 +106,20 @@ class CustomerDimensionService:
                              last_order_date: Optional[datetime]) -> int:
         """Calculate customer tenure in days."""
         if not first_order_date:
+            self.logger.debug("No first order date found, returning tenure of 0 days")
             return 0
             
         end_date = last_order_date or datetime.now()
-        return (end_date - first_order_date).days
+        tenure_days = (end_date - first_order_date).days
+        self.logger.debug(f"Calculated tenure from {first_order_date} to {end_date}: {tenure_days} days")
+        return tenure_days
 
     def get_customer_metrics(self, customer_id: int) -> Dict[str, Any]:
         """Calculate customer metrics from order history."""
         try:
+            self.logger.info(f"Retrieving order metrics for customer ID: {customer_id}")
+            self.logger.debug(f"Executing query to calculate metrics for customer {customer_id}")
+            
             metrics = self.session.query(
                 func.count(Order.id).label('total_orders'),
                 func.sum(Order.total).label('total_spent'),
@@ -125,11 +141,13 @@ class CustomerDimensionService:
                 result['avg_order_value'] = result['total_spent'] / result['total_orders']
             else:
                 result['avg_order_value'] = 0.0
-                
+            
+            self.logger.debug(f"Customer {customer_id} metrics: {result}")
+            self.logger.info(f"Successfully retrieved metrics for customer ID: {customer_id}")
             return result
             
         except Exception as e:
-            self.logger.error(f"Error calculating customer metrics: {str(e)}")
+            self.logger.error(f"Error calculating customer metrics for ID {customer_id}: {str(e)}", exc_info=True)
             raise
 
     def update_customer_dimension(self, customer: Customer, restaurant_key: int) -> None:
@@ -138,9 +156,11 @@ class CustomerDimensionService:
             self.logger.info(f"Starting customer dimension update for customer ID: {customer.id}")
             
             # Get current metrics
+            self.logger.debug(f"Retrieving metrics for customer {customer.id}")
             metrics = self.get_customer_metrics(customer.id)
             
             # Get current customer dimension record
+            self.logger.debug(f"Looking up current dimension record for customer {customer.id}")
             current_record = self.session.query(DimCustomer)\
                 .filter(
                     DimCustomer.customer_id == customer.id,
@@ -148,30 +168,41 @@ class CustomerDimensionService:
                 ).first()
             
             # Create new dimension record
+            self.logger.debug(f"Transforming customer {customer.id} data to dimension record")
             new_record = self.transform_customer(customer, metrics, restaurant_key)
             
             if current_record:
+                self.logger.debug(f"Found existing dimension record for customer {customer.id}")
                 # Check if any tracked attributes have changed
-                if self._has_tracked_changes(current_record, new_record):
+                has_changes = self._has_tracked_changes(current_record, new_record)
+                self.logger.debug(f"Checked for tracked changes: {'changes detected' if has_changes else 'no changes'}")
+                
+                if has_changes:
                     # Expire current record
+                    self.logger.debug(f"Expiring current record for customer {customer.id}")
                     current_record.expiration_date = datetime.now()
                     current_record.is_current = False
                     
                     # Add new record
+                    self.logger.debug(f"Adding new dimension record for customer {customer.id}")
                     self.session.add(new_record)
                 else:
                     # Update non-tracked attributes of current record
+                    self.logger.debug(f"Updating non-tracked attributes for customer {customer.id}")
                     self._update_non_tracked_attributes(current_record, new_record)
             else:
                 # Add first record for this customer
+                self.logger.debug(f"No existing dimension record found, adding first record for customer {customer.id}")
                 self.session.add(new_record)
             
+            self.logger.debug(f"Committing changes to database for customer {customer.id}")
             self.session.commit()
             self.logger.info(f"Successfully updated customer dimension for customer ID: {customer.id}")
             
         except Exception as e:
+            self.logger.debug(f"Rolling back database transaction due to error")
             self.session.rollback()
-            self.logger.error(f"Error updating customer dimension: {str(e)}")
+            self.logger.error(f"Error updating customer dimension for ID {customer.id}: {str(e)}", exc_info=True)
             raise
 
     def _has_tracked_changes(self, current: DimCustomer, new: DimCustomer) -> bool:
@@ -185,10 +216,14 @@ class CustomerDimensionService:
             'is_sms_marketing_allowed'
         ]
         
-        return any(
-            getattr(current, attr) != getattr(new, attr)
-            for attr in tracked_attributes
-        )
+        for attr in tracked_attributes:
+            current_val = getattr(current, attr)
+            new_val = getattr(new, attr)
+            if current_val != new_val:
+                self.logger.debug(f"Tracked attribute '{attr}' changed: {current_val} -> {new_val}")
+                return True
+                
+        return False
 
     def _update_non_tracked_attributes(self, current: DimCustomer, new: DimCustomer) -> None:
         """Update non-tracked attributes (Type 1 changes)."""
@@ -202,4 +237,8 @@ class CustomerDimensionService:
         ]
         
         for attr in non_tracked_attributes:
-            setattr(current, attr, getattr(new, attr))
+            old_val = getattr(current, attr)
+            new_val = getattr(new, attr)
+            if old_val != new_val:
+                self.logger.debug(f"Updating non-tracked attribute '{attr}': {old_val} -> {new_val}")
+                setattr(current, attr, new_val)
