@@ -51,6 +51,10 @@ class OrderSyncApplication:
         self.state = ApplicationState()
         self.config = None
         self.services: Optional[ApplicationServices] = None
+        # Add counters for summary logging
+        self.orders_processed = 0
+        self.orders_etl_processed = 0
+        self.orders_skipped = 0
 
     def _setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown"""
@@ -80,13 +84,16 @@ class OrderSyncApplication:
         """Initialize all application services"""
         try:
             # Database initialization
+            self.logger.debug("Initializing database manager...")
             db_manager = DatabaseManager(self.config.database.connection_string)
             db_manager.create_tables()
 
             # Get database session
             db_session = db_manager.get_session()
+            self.logger.debug("Database session created")
 
             # Initialize all services
+            self.logger.debug("Initializing application services...")
             sync_service = OrderSyncService(db_session)
             page_tracker = PageTrackerService(db_session)
             credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
@@ -108,6 +115,8 @@ class OrderSyncApplication:
                 base_url=self.config.api.base_url,
                 page_size=self.config.api.page_size
             )
+            
+            self.logger.debug("All services initialized successfully")
 
             return ApplicationServices(
                 db_manager=db_manager,
@@ -116,7 +125,7 @@ class OrderSyncApplication:
                 page_tracker=page_tracker,
                 credential_manager=credential_manager,
                 schedule_manager=schedule_manager,
-                etl_orchestrator=etl_orchestrator  # Make sure this is included
+                etl_orchestrator=etl_orchestrator
             )
 
         except Exception as e:
@@ -127,8 +136,10 @@ class OrderSyncApplication:
         """Cleanup application services"""
         if services:
             try:
+                self.logger.debug("Starting service cleanup...")
                 # Add specific cleanup for each service
                 await services.api_client.close()
+                self.logger.debug("Service cleanup completed")
                 # Note: Remove services.sync_service.close() if it doesn't exist
                 # Note: Remove services.page_tracker.close() if it doesn't exist
                 # Note: Remove services.credential_manager.close() if it doesn't exist
@@ -178,7 +189,7 @@ class OrderSyncApplication:
     async def _process_etl(self, order: Order, services: ApplicationServices) -> bool:
         """Handle ETL processing for an order"""
         try:
-            self.logger.info(f"Starting ETL process for order {order.id}")
+            self.logger.debug(f"Starting ETL process for order {order.id}")
             
             # Get datetime key
             datetime_key = services.etl_orchestrator.get_datetime_key(order.creation_date)
@@ -186,14 +197,16 @@ class OrderSyncApplication:
                 self.logger.error(f"Could not get datetime key for order {order.id}")
                 return False
                 
-            self.logger.info(f"Got datetime key {datetime_key}")
+            self.logger.debug(f"Got datetime key {datetime_key}")
             
             # Process dimensions and facts
+            self.logger.debug(f"Processing dimensions and facts for order {order.id}")
             await services.etl_orchestrator.process_order_dimensions_and_facts(
                 order=order,
                 datetime_key=datetime_key
             )
-            self.logger.info(f"Successfully completed ETL process for order {order.id}")
+            self.logger.debug(f"ETL process completed for order {order.id}")
+            self.orders_etl_processed += 1
             return True
             
         except Exception as e:
@@ -205,10 +218,14 @@ class OrderSyncApplication:
         """Process a single order with validation and retries"""
         try:
             # First, sync to OLTP model
-            self.logger.info(f"Starting OLTP sync for order {order_data.get('ID')}")
+            order_id = order_data.get('ID')
+            self.logger.debug(f"Starting OLTP sync for order {order_id}")
             order = services.sync_service.sync_order_data(order_data)
+            self.orders_processed += 1
+            
             if order.creation_date < datetime(2020, 1, 1):
-                self.logger.info(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
+                self.logger.debug(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
+                self.orders_skipped += 1
                 return False
             
             # Then do ETL processing
@@ -223,10 +240,10 @@ class OrderSyncApplication:
                 ).first()
                 
                 if customer:
-                    self.logger.info(f"Starting customer dimension update for customer {customer.id}")
+                    self.logger.debug(f"Updating customer dimension for customer {customer.id}")
                     restaurant_key = services.api_client.restaurant_id
                     services.etl_orchestrator.customer_service.update_customer_dimension(customer, restaurant_key)
-                    self.logger.info(f"Successfully updated customer dimension for customer {customer.id}")
+                    self.logger.debug(f"Customer dimension updated for customer {customer.id}")
                 else:
                     self.logger.error(f"Could not find customer record for ID {order.customer_id}")
             except Exception as e:
@@ -238,72 +255,22 @@ class OrderSyncApplication:
             self.logger.error(f"Error processing order: {str(e)}", exc_info=True)
             raise
 
-    async def run(self):
-        """Main application loop"""
-        if not await self.initialize():
-            self.logger.error("Failed to initialize application. Exiting.")
-            return
-
-        self.logger.info("Starting order synchronization process...")
-
-        async with self._service_context() as services:
-            try:
-                # Initialize dimensional model before starting sync process
-                await self._initialize_dimensional_model(services)
-                # Check if we should start immediately
-                if not services.schedule_manager.should_start_immediately():
-                    wait_time = services.schedule_manager.time_until_next_window()
-                    self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
-                    await asyncio.sleep(min(wait_time, 3600))
-                else:
-                    self.logger.info("Within scheduled window - starting immediately")
-
-                while self.state.is_running:
-                    try:
-                        if not services.schedule_manager.is_within_schedule():
-                            wait_time = services.schedule_manager.time_until_next_window()
-                            self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
-                            await asyncio.sleep(min(wait_time, 3600))
-                            continue
-
-                        services.credential_manager.import_credentials_from_yaml()
-                        restaurant_users = services.credential_manager.list_credentials()
-                        
-                        for restaurant_user in restaurant_users:
-                            if not self.state.is_running:
-                                break
-                            
-                            if not services.schedule_manager.is_within_schedule():
-                                break
-                                
-                            await self._process_restaurant(restaurant_user, services)
-
-                        if self.state.is_running:
-                            self.logger.info("Completed sync cycle. Waiting before next cycle...")
-                            await asyncio.sleep(self.config.sync.polling_interval)
-
-                    except Exception as e:
-                        self.logger.error(f"Error in main sync loop: {str(e)}")
-                        await asyncio.sleep(self.config.sync.delay_on_error)
-
-            except Exception as e:
-                self.logger.error(f"Error during application run: {str(e)}")
-                raise
-
-        self.logger.info("Application shutdown complete")
-
     async def _process_restaurant_page(
         self,
         current_page: int,
         services: ApplicationServices
     ) -> bool:
         """Process a single page of restaurant orders"""
-        self.logger.debug("process_restaurant_page...")
+        self.logger.debug(f"Processing restaurant page {current_page}...")
         try:
             orders_response = await services.api_client.get_orders_list(current_page)
             
             if not orders_response.get('Data'):
+                self.logger.debug(f"No data found on page {current_page}")
                 return False
+
+            order_count = len(orders_response['Data'])
+            self.logger.debug(f"Found {order_count} orders on page {current_page}")
 
             for order in orders_response['Data']:
                 if not self.state.is_running:
@@ -323,52 +290,78 @@ class OrderSyncApplication:
 
     async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
         """Process orders for a single restaurant"""
-        self.logger.info(f"Processing orders for restaurant: {restaurant_user.restaurant_id}")
+        self.logger.info(f"Processing restaurant: {restaurant_user.restaurant_id} - {restaurant_user.company_name}")
+        
+        # Reset counters for this restaurant
+        restaurant_orders_processed = 0
+        restaurant_orders_etl_processed = 0
+        restaurant_orders_skipped = 0
+        
         try:
+            # Store current counters to calculate restaurant-specific counts later
+            start_orders_processed = self.orders_processed
+            start_orders_etl_processed = self.orders_etl_processed
+            start_orders_skipped = self.orders_skipped
             
-            #creadentials = self.services.creadential_manager.get_credentials_by_restaurant(restaurant.id)
             credentials = services.credential_manager.get_credential_by_restaurant(restaurant_user.restaurant_id)
-            self.logger.debug(f"Credentials: {credentials}")
+            self.logger.debug(f"Retrieved credentials for restaurant {restaurant_user.restaurant_id}")
+            
             if not credentials:
                 self.logger.error(f"No credentials found for restaurant {restaurant_user.name}")
                 return
             
             # Login with restaurant credentials
             try:
-                session_token, company_id= await services.api_client.login(
+                self.logger.debug(f"Logging in to restaurant API for {restaurant_user.restaurant_id}")
+                session_token, company_id = await services.api_client.login(
                     email=credentials.get('username', ''),
                     password=credentials.get('password', '')
                 )
 
                 if not session_token:
                     raise ValueError("Login failed: No session token returned.")
+                
+                self.logger.debug(f"Login successful for restaurant {restaurant_user.restaurant_id}")
 
             except KeyError as e:
-                print(f"Missing credential key: {e}")
-                return None  # Handle missing credentials properly
+                self.logger.error(f"Missing credential key: {e}")
+                return None
 
             except Exception as e:
-                print(f"Login error: {e}")
-                return None  # Or log the error and raise a custom exception
+                self.logger.error(f"Login error: {e}")
+                return None
             
             current_page = services.page_tracker.get_last_page_index(
                 restaurant_id=services.api_client.restaurant_id,
                 restaurant_name=services.api_client.restaurant_name
             )
+            
+            self.logger.debug(f"Starting sync from page {current_page} for restaurant {restaurant_user.restaurant_id}")
 
             while self.state.is_running:
-                self.logger.info(f"Current page index for {restaurant_user.company_name} - {current_page}")
+                self.logger.debug(f"Processing page {current_page} for {restaurant_user.company_name}")
                 
                 has_more_pages = await self._process_restaurant_page(
                     current_page, services
                 )
                 
                 if not has_more_pages:
+                    self.logger.debug(f"No more pages for restaurant {restaurant_user.restaurant_id}")
                     break
                 
                 services.page_tracker.update_page_index(services.api_client.restaurant_id, current_page)
                 current_page += 1
                 await asyncio.sleep(self.config.sync.delay_between_pages)
+            
+            # Calculate restaurant-specific metrics
+            restaurant_orders_processed = self.orders_processed - start_orders_processed
+            restaurant_orders_etl_processed = self.orders_etl_processed - start_orders_etl_processed
+            restaurant_orders_skipped = self.orders_skipped - start_orders_skipped
+            
+            self.logger.info(f"Restaurant {restaurant_user.company_name} sync complete: "
+                            f"processed {restaurant_orders_processed} orders, "
+                            f"ETL processed {restaurant_orders_etl_processed} orders, "
+                            f"skipped {restaurant_orders_skipped} orders")
 
         except Exception as e:
             self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
@@ -382,21 +375,16 @@ class OrderSyncApplication:
             self.logger.debug("Loading configuration...")
             self.config = get_config()
         
-
             # Setup logging
             self.logger.debug("Setting up logging...")
             setup_logging(
-                log_dir=self.config.logging.filename,  # Updated to use correct path
-                log_level=getattr(logging, self.config.logging.level)  # Convert string to log level
+                log_dir=self.config.logging.filename,
+                log_level=getattr(logging, self.config.logging.level)
             )
             
-
             # Setup signal handlers
             self.logger.debug("Setting up signal handlers...")
             self._setup_signal_handlers()
-
-            
-
 
             self.logger.info("Application initialized successfully")
             return True
@@ -428,17 +416,30 @@ class OrderSyncApplication:
                 else:
                     self.logger.info("Within scheduled window - starting immediately")
 
+                cycle_count = 0
+                
                 while self.state.is_running:
                     try:
-                        # Rest of your existing run loop code remains the same
+                        # Reset counters for this cycle
+                        cycle_start_orders = self.orders_processed
+                        cycle_start_etl_orders = self.orders_etl_processed
+                        cycle_start_skipped = self.orders_skipped
+                        
+                        cycle_count += 1
+                        self.logger.info(f"Starting sync cycle #{cycle_count}")
+                        
                         if not services.schedule_manager.is_within_schedule():
                             wait_time = services.schedule_manager.time_until_next_window()
                             self.logger.info(f"Outside of scheduled running hours. Waiting for {wait_time/3600:.2f} hours until next window")
                             await asyncio.sleep(min(wait_time, 3600))
                             continue
 
+                        self.logger.debug("Importing credentials from YAML")
                         services.credential_manager.import_credentials_from_yaml()
+                        
+                        self.logger.debug("Retrieving restaurant credentials list")
                         restaurant_users = services.credential_manager.list_credentials()
+                        self.logger.info(f"Found {len(restaurant_users)} restaurants to process")
                         
                         for restaurant_user in restaurant_users:
                             if not self.state.is_running:
@@ -449,8 +450,18 @@ class OrderSyncApplication:
                                 
                             await self._process_restaurant(restaurant_user, services)
 
+                        # Calculate cycle statistics
+                        cycle_orders = self.orders_processed - cycle_start_orders
+                        cycle_etl_orders = self.orders_etl_processed - cycle_start_etl_orders
+                        cycle_skipped = self.orders_skipped - cycle_start_skipped
+                        
+                        self.logger.info(f"Completed sync cycle #{cycle_count}: "
+                                        f"processed {cycle_orders} orders, "
+                                        f"ETL processed {cycle_etl_orders} orders, "
+                                        f"skipped {cycle_skipped} orders")
+                        
                         if self.state.is_running:
-                            self.logger.info("Completed sync cycle. Waiting before next cycle...")
+                            self.logger.info(f"Waiting {self.config.sync.polling_interval}s before next cycle...")
                             await asyncio.sleep(self.config.sync.polling_interval)
 
                     except Exception as e:
@@ -461,7 +472,10 @@ class OrderSyncApplication:
                 self.logger.error(f"Error during application run: {str(e)}")
                 raise
 
-        self.logger.info("Application shutdown complete")
+        self.logger.info(f"Application shutdown complete. Total statistics: "
+                         f"processed {self.orders_processed} orders, "
+                         f"ETL processed {self.orders_etl_processed} orders, "
+                         f"skipped {self.orders_skipped} orders")
 
 
 def main():
