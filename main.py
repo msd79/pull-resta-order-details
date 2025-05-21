@@ -5,7 +5,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.services.etl_orchestration_service import ETLOrchestrator
 from src.config.settings import get_config
@@ -20,6 +20,8 @@ from src.utils.logging_config import setup_logging
 from src.utils.retry import retry_with_backoff
 from src.utils.validation import ValidationUtils
 from src.database.models import Customer
+import asyncio
+
 
 @dataclass
 class ApplicationServices:
@@ -157,34 +159,6 @@ class OrderSyncApplication:
             if services:
                 await self._cleanup_services(services)
 
-    async def initialize(self) -> bool:
-        """Initialize application configuration and logging"""
-        try:
-            self.logger.debug("Starting application initialization...")
-            
-            # Load configuration
-            self.logger.debug("Loading configuration...")
-            self.config = get_config()
-
-            # Setup logging
-            self.logger.debug("Setting up logging...")
-            setup_logging(
-                log_dir=self.config.logging.filename,
-                log_level=getattr(logging, self.config.logging.level)
-            )
-
-            # Setup signal handlers
-            self.logger.debug("Setting up signal handlers...")
-            self._setup_signal_handlers()
-
-            self.logger.info("Application initialized successfully")
-            return True
-
-        except Exception as e:
-            self.logger.error(f"Failed to initialize application: {str(e)}")
-            import traceback
-            self.logger.error(f"Initialization error traceback: {traceback.format_exc()}")
-            return False
  
     async def _process_etl(self, order: Order, services: ApplicationServices) -> bool:
         """Handle ETL processing for an order"""
@@ -223,7 +197,7 @@ class OrderSyncApplication:
             order = services.sync_service.sync_order_data(order_data)
             self.orders_processed += 1
             
-            if order.creation_date < datetime(2020, 1, 1):
+            if order.creation_date < datetime(2020, 1, 1,tzinfo=timezone.utc):
                 self.logger.debug(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
                 self.orders_skipped += 1
                 return False
@@ -378,7 +352,7 @@ class OrderSyncApplication:
             # Setup logging
             self.logger.debug("Setting up logging...")
             setup_logging(
-                log_dir=self.config.logging.filename,
+                log_dir="logs",
                 log_level=getattr(logging, self.config.logging.level)
             )
             
