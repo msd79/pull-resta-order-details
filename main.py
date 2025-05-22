@@ -198,7 +198,7 @@ class OrderSyncApplication:
             order = services.sync_service.sync_order_data(order_data)
             self.orders_processed += 1
             
-            if order.creation_date < datetime(2020, 1, 1,tzinfo=timezone.utc):
+            if order.creation_date < datetime(2020, 1, 1):
                 self.logger.debug(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
                 self.orders_skipped += 1
                 return False
@@ -251,8 +251,9 @@ class OrderSyncApplication:
                 if not self.state.is_running:
                     return False
                 # Check if order exists in either Order table or fact_orders table
-                order_exists_in_order_table = services.db_manager.session.query(Order).filter(Order.id == order['ID']).first()
-                order_exists_in_fact_table = services.db_manager.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
+                services.sync_service.session
+                order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order['ID']).first()
+                order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
 
                 if order_exists_in_order_table or order_exists_in_fact_table:
                     self.logger.debug(f"Order {order['ID']} already exists in the database. Skipping...")

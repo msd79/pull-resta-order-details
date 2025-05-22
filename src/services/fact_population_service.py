@@ -154,7 +154,7 @@ class FactPopulationService:
             
             self.logger.debug("Committing session for fact customer metrics")
             self.session.commit()
-            self.logger.info(f"Successfully {'updated' : 'created'} customer metrics for order ID {order_id}")
+            self.logger.info(f"Successfully 'updated' : created customer metrics for order ID {order_id}")
 
         except Exception as e:
             self.session.rollback()
