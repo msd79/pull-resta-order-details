@@ -2,6 +2,7 @@ Run docker compopse
 
 Build container:
 DB_PASSWORD=qwerty DB_PASSPHRASE=X7h3NkL9qzVm docker-compose up --build
+sudo docker run -d -v ./config:/app/config -v ./order_sync.log:/app/order_sync.log -v ./creds:/app/creds  --env-file .env  pull-resta-order-details-order_sync
 
 python3 -c "import pyodbc; print(pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};Server=192.168.0.11\\SQLEXPRESS;Database=RestaOrders1;UID=sa;PWD=qwerty'))"
 

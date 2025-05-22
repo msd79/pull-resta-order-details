@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from src.database.dimentional_models import FactOrders
 from src.services.etl_orchestration_service import ETLOrchestrator
 from src.config.settings import get_config
 from src.database.database import DatabaseManager
@@ -249,7 +250,15 @@ class OrderSyncApplication:
             for order in orders_response['Data']:
                 if not self.state.is_running:
                     return False
+                # Check if order exists in either Order table or fact_orders table
+                order_exists_in_order_table = services.db_manager.session.query(Order).filter(Order.id == order['ID']).first()
+                order_exists_in_fact_table = services.db_manager.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
 
+                if order_exists_in_order_table or order_exists_in_fact_table:
+                    self.logger.debug(f"Order {order['ID']} already exists in the database. Skipping...")
+                    self.orders_skipped += 1
+                    continue
+ 
                 order_details = await services.api_client.fetch_order_details(order['ID'])
                 if order_details and order_details.get('ErrorCode') == 0:
                     await self._process_order(order_details, services)
