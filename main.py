@@ -187,26 +187,27 @@ class OrderSyncApplication:
         except Exception as e:
             self.logger.error(f"Failed ETL processing for order {order.id}: {str(e)}", exc_info=True)
             return False
-
     @retry_with_backoff(retries=3, backoff_factor=2)
-    async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices) -> bool:
+    async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices, restaurant_name: str = None) -> bool:
         """Process a single order with validation and retries"""
+        restaurant_context = f" for {restaurant_name}" if restaurant_name else ""
+        
         try:
             # First, sync to OLTP model
             order_id = order_data.get('ID')
-            self.logger.debug(f"Starting OLTP sync for order {order_id}")
+            self.logger.debug(f"Starting OLTP sync for order {order_id}{restaurant_context}")
             order = services.sync_service.sync_order_data(order_data)
-            self.orders_processed += 1
+            
             
             if order.creation_date < datetime(2020, 1, 1):
-                self.logger.debug(f"Order {order.id} was created before 01/01/2020. Skipping ETL processing...")
+                self.logger.debug(f"Order {order.id}{restaurant_context} was created before 01/01/2020. Skipping ETL processing...")
                 self.orders_skipped += 1
                 return False
-            
+            self.orders_processed += 1
             # Then do ETL processing
             etl_success = await self._process_etl(order, services)
             if not etl_success:
-                self.logger.warning(f"ETL processing failed for order {order.id}")
+                self.logger.warning(f"ETL processing failed for order {order.id}{restaurant_context}")
                 
             # Finally update customer dimension
             try:
@@ -215,63 +216,102 @@ class OrderSyncApplication:
                 ).first()
                 
                 if customer:
-                    self.logger.debug(f"Updating customer dimension for customer {customer.id}")
+                    self.logger.debug(f"Updating customer dimension for customer {customer.id}{restaurant_context}")
                     restaurant_key = services.api_client.restaurant_id
                     services.etl_orchestrator.customer_service.update_customer_dimension(customer, restaurant_key)
-                    self.logger.debug(f"Customer dimension updated for customer {customer.id}")
+                    self.logger.debug(f"Customer dimension updated for customer {customer.id}{restaurant_context}")
                 else:
-                    self.logger.error(f"Could not find customer record for ID {order.customer_id}")
+                    self.logger.error(f"Could not find customer record for ID {order.customer_id}{restaurant_context}")
             except Exception as e:
-                self.logger.error(f"Error updating customer dimension: {str(e)}", exc_info=True)
+                self.logger.error(f"Error updating customer dimension for order {order.id}{restaurant_context}: {str(e)}", exc_info=True)
 
             return True
 
         except Exception as e:
-            self.logger.error(f"Error processing order: {str(e)}", exc_info=True)
+            self.logger.error(f"Error processing order {order_data.get('ID', 'unknown')}{restaurant_context}: {str(e)}", exc_info=True)
             raise
-
     async def _process_restaurant_page(
         self,
         current_page: int,
-        services: ApplicationServices
+        services: ApplicationServices,
+        restaurant_name: str = None
     ) -> bool:
         """Process a single page of restaurant orders"""
-        self.logger.debug(f"Processing restaurant page {current_page}...")
+        restaurant_context = f" for {restaurant_name}" if restaurant_name else ""
+        self.logger.debug(f"Processing restaurant page {current_page}{restaurant_context}...")
         try:
             orders_response = await services.api_client.get_orders_list(current_page)
             
             if not orders_response.get('Data'):
-                self.logger.debug(f"No data found on page {current_page}")
+                self.logger.debug(f"No data found on page {current_page}{restaurant_context}")
                 return False
 
             order_count = len(orders_response['Data'])
-            self.logger.debug(f"Found {order_count} orders on page {current_page}")
+            self.logger.debug(f"Found {order_count} orders on page {current_page}{restaurant_context}")
 
+            # Track failed orders for this page
+            failed_orders = 0
+            
             for order in orders_response['Data']:
                 if not self.state.is_running:
                     return False
-                # Check if order exists in either Order table or fact_orders table
-                services.sync_service.session
-                order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order['ID']).first()
-                order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
+                    
+                try:
+                    # Check if order exists in either Order table or fact_orders table
+                    order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order['ID']).first()
+                    order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
 
-                if order_exists_in_order_table or order_exists_in_fact_table:
-                    self.logger.debug(f"Order {order['ID']} already exists in the database. Skipping...")
-                    self.orders_skipped += 1
+                    if order_exists_in_order_table or order_exists_in_fact_table:
+                        self.logger.debug(f"Order {order['ID']} already exists in the database{restaurant_context}. Skipping...")
+                        self.orders_skipped += 1
+                        continue
+
+                    order_details = await services.api_client.fetch_order_details(order['ID'])
+                    if order_details and order_details.get('ErrorCode') == 0:
+                        # Wrap the order processing in a try-catch to handle individual order failures
+                        try:
+                            await self._process_order(order_details, services, restaurant_name)
+                            self.logger.debug(f"Successfully processed order {order['ID']}{restaurant_context}")
+                        except Exception as order_error:
+                            failed_orders += 1
+                            # Rollback session to clean state after error
+                            try:
+                                services.sync_service.session.rollback()
+                            except:
+                                pass  # Ignore rollback errors
+                            self.logger.error(f"Failed to process order {order['ID']}{restaurant_context}: {str(order_error)}")
+                            
+                            # Check if it's a data truncation error specifically
+                            if "String or binary data would be truncated" in str(order_error):
+                                self.logger.warning(f"Data truncation error for order {order['ID']}{restaurant_context} - likely data mapping issue")
+                            elif "ProgrammingError" in str(order_error):
+                                self.logger.warning(f"Database programming error for order {order['ID']}{restaurant_context} - continuing with next order")
+                            
+                            # Continue to next order instead of failing the entire page
+                            continue
+                    else:
+                        self.logger.warning(f"Could not fetch details for order {order['ID']}{restaurant_context} or API error occurred")
+                    
+                    await asyncio.sleep(self.config.sync.delay_between_orders)
+                    
+                except Exception as individual_order_error:
+                    failed_orders += 1
+                    self.logger.error(f"Unexpected error processing order {order.get('ID', 'unknown')}{restaurant_context}: {str(individual_order_error)}")
+                    # Continue to next order
                     continue
- 
-                order_details = await services.api_client.fetch_order_details(order['ID'])
-                if order_details and order_details.get('ErrorCode') == 0:
-                    await self._process_order(order_details, services)
-                
-                await asyncio.sleep(self.config.sync.delay_between_orders)
+
+            # Log summary for this page
+            successful_orders = order_count - failed_orders
+            if failed_orders > 0:
+                self.logger.warning(f"Page {current_page}{restaurant_context} completed with {failed_orders} failed orders out of {order_count} total orders")
+            else:
+                self.logger.debug(f"Page {current_page}{restaurant_context} completed successfully with {successful_orders} orders processed")
 
             return True
 
         except Exception as e:
-            self.logger.error(f"Error processing page {current_page}: {str(e)}")
+            self.logger.error(f"Error processing page {current_page}{restaurant_context}: {str(e)}")
             return False
-
     async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
         """Process orders for a single restaurant"""
         self.logger.info(f"Processing restaurant: {restaurant_user.restaurant_id} - {restaurant_user.company_name}")
@@ -326,7 +366,7 @@ class OrderSyncApplication:
                 self.logger.debug(f"Processing page {current_page} for {restaurant_user.company_name}")
                 
                 has_more_pages = await self._process_restaurant_page(
-                    current_page, services
+                    current_page, services, restaurant_user.company_name
                 )
                 
                 if not has_more_pages:
