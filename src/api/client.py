@@ -77,8 +77,8 @@ class RestaAPI:
 
                     self.session_token = data.get('SessionToken')
                     if not self.session_token:
-                        self.logger.error("Session token not found in response")
-                        raise Exception("Session token not found in response")
+                        self.logger.error("Session token not found in response for {email}")
+                        raise Exception("Session token not found in response for {email}")
                     
                     # Log token at DEBUG level
                     self.logger.debug(f"Session token: {self.session_token}")
@@ -92,8 +92,8 @@ class RestaAPI:
                         self.company_id = data.get('Company', {}).get('ID')
 
                         if not self.company_id:
-                            self.logger.error("Could not find company ID in response or token")
-                            raise Exception("Could not find company ID in response or token")
+                            self.logger.error("Could not find company ID in response or token #{email}")
+                            raise Exception("Could not find company ID in response or token #{email}")
                     
                     self.restaurant_id = data.get('Restaurant', {}).get('ID')
                     self.restaurant_name = data.get('Restaurant', {}).get('Name')
@@ -104,12 +104,12 @@ class RestaAPI:
                     
                 except json.JSONDecodeError as e:
                     text = await response.text()
-                    self.logger.error(f"Failed to parse login response: {e}")
+                    self.logger.error(f"Failed to parse login response: {e} - {email}")
                     self.logger.debug(f"Raw response: {text}")
                     raise Exception(f"Failed to parse login response: {e}")
 
         except aiohttp.ClientError as e:
-            self.logger.error(f"Network error during login: {str(e)}")
+            self.logger.error(f"Network error during login: {str(e)} - {email}")
             raise
 
     async def get_orders_list(self, page_index):

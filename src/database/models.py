@@ -173,3 +173,13 @@ class ProcessedOrders(Base):
     fact_type = Column(String(50), nullable=False)  # Added this column
     processed_date = Column(DateTime, nullable=False)
     
+
+class OrderSyncTracker(Base):
+    __tablename__ = 'order_sync_tracker'
+    
+    restaurant_id = Column(Integer, primary_key=True)
+    restaurant_name = Column(String(255))
+    last_order_id = Column(Integer, nullable=False)
+    last_order_date = Column(DateTime, nullable=False)
+    last_sync_date = Column(DateTime, nullable=False)
+    total_orders_synced = Column(Integer, default=0)

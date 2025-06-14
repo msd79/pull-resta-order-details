@@ -5,7 +5,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from src.database.dimentional_models import FactOrders
 from src.services.etl_orchestration_service import ETLOrchestrator
@@ -15,7 +15,8 @@ from src.api.client import RestaAPI
 from src.database.models import Order, User
 from src.services.credential_manager import CredentialManagerService
 from src.services.order_sync import OrderSyncService
-from src.services.page_tracker import PageTrackerService
+# Replace page tracker with order tracker
+from src.services.order_tracker_v2 import OrderTrackerServiceV2
 from src.services.schedule_manager import ScheduleManager
 from src.utils.logging_config import setup_logging
 from src.utils.retry import retry_with_backoff
@@ -30,7 +31,7 @@ class ApplicationServices:
     db_manager: DatabaseManager
     api_client: RestaAPI
     sync_service: OrderSyncService
-    page_tracker: PageTrackerService
+    order_tracker: OrderTrackerServiceV2  # Changed from page_tracker
     credential_manager: CredentialManagerService
     schedule_manager: ScheduleManager
     etl_orchestrator: ETLOrchestrator
@@ -82,7 +83,6 @@ class OrderSyncApplication:
             self.logger.error(f"Error initializing dimensional model: {str(e)}")
             raise
 
-    
     async def _initialize_services(self) -> ApplicationServices:
         """Initialize all application services"""
         try:
@@ -98,7 +98,7 @@ class OrderSyncApplication:
             # Initialize all services
             self.logger.debug("Initializing application services...")
             sync_service = OrderSyncService(db_session)
-            page_tracker = PageTrackerService(db_session)
+            order_tracker = OrderTrackerServiceV2(db_session)  # Changed from PageTrackerService
             credential_manager = CredentialManagerService(db_session, self.config.database.passphrase)
             
             # Initialize schedule manager
@@ -125,7 +125,7 @@ class OrderSyncApplication:
                 db_manager=db_manager,
                 api_client=api_client,
                 sync_service=sync_service,
-                page_tracker=page_tracker,
+                order_tracker=order_tracker,  # Changed from page_tracker
                 credential_manager=credential_manager,
                 schedule_manager=schedule_manager,
                 etl_orchestrator=etl_orchestrator
@@ -143,9 +143,6 @@ class OrderSyncApplication:
                 # Add specific cleanup for each service
                 await services.api_client.close()
                 self.logger.debug("Service cleanup completed")
-                # Note: Remove services.sync_service.close() if it doesn't exist
-                # Note: Remove services.page_tracker.close() if it doesn't exist
-                # Note: Remove services.credential_manager.close() if it doesn't exist
             except Exception as e:
                 self.logger.error(f"Error during service cleanup: {str(e)}")
 
@@ -160,7 +157,6 @@ class OrderSyncApplication:
             if services:
                 await self._cleanup_services(services)
 
- 
     async def _process_etl(self, order: Order, services: ApplicationServices) -> bool:
         """Handle ETL processing for an order"""
         try:
@@ -187,6 +183,7 @@ class OrderSyncApplication:
         except Exception as e:
             self.logger.error(f"Failed ETL processing for order {order.id}: {str(e)}", exc_info=True)
             return False
+
     @retry_with_backoff(retries=3, backoff_factor=2)
     async def _process_order(self, order_data: Dict[str, Any], services: ApplicationServices, restaurant_name: str = None) -> bool:
         """Process a single order with validation and retries"""
@@ -197,7 +194,6 @@ class OrderSyncApplication:
             order_id = order_data.get('ID')
             self.logger.debug(f"Starting OLTP sync for order {order_id}{restaurant_context}")
             order = services.sync_service.sync_order_data(order_data)
-            
             
             if order.creation_date < datetime(2020, 1, 1):
                 self.logger.debug(f"Order {order.id}{restaurant_context} was created before 01/01/2020. Skipping ETL processing...")
@@ -230,96 +226,237 @@ class OrderSyncApplication:
         except Exception as e:
             self.logger.error(f"Error processing order {order_data.get('ID', 'unknown')}{restaurant_context}: {str(e)}", exc_info=True)
             raise
-    async def _process_restaurant_page(
-        self,
-        current_page: int,
-        services: ApplicationServices,
-        restaurant_name: str = None
-    ) -> bool:
-        """Process a single page of restaurant orders"""
-        restaurant_context = f" for {restaurant_name}" if restaurant_name else ""
-        self.logger.debug(f"Processing restaurant page {current_page}{restaurant_context}...")
+
+    def _parse_date(self, date_str: Optional[str]) -> Optional[datetime]:
+        """Parse date string from API response."""
+        if not date_str or date_str.lower() == "null":
+            return None
+
         try:
-            orders_response = await services.api_client.get_orders_list(current_page)
+            if date_str.startswith('/Date(') and date_str.endswith(')/'):
+                timestamp_ms = int(date_str[6:-2])
+                return datetime.fromtimestamp(timestamp_ms / 1000)
+        except (ValueError, TypeError):
+            return None
+
+        return None
+
+    async def _process_restaurant_orders(self, services: ApplicationServices, 
+                                       restaurant_id: int, 
+                                       restaurant_name: str,
+                                       max_pages: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Process orders for a restaurant using the new order-based tracking approach.
+        Always starts from page 1 (latest orders) and continues until finding processed orders.
+        """
+        try:
+            self.logger.info(f"Starting order sync for {restaurant_name} (ID: {restaurant_id})")
             
-            if not orders_response.get('Data'):
-                self.logger.debug(f"No data found on page {current_page}{restaurant_context}")
-                return False
-
-            order_count = len(orders_response['Data'])
-            self.logger.debug(f"Found {order_count} orders on page {current_page}{restaurant_context}")
-
-            # Track failed orders for this page
-            failed_orders = 0
-            
-            for order in orders_response['Data']:
-                if not self.state.is_running:
-                    return False
-                    
-                try:
-                    # Check if order exists in either Order table or fact_orders table
-                    order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order['ID']).first()
-                    order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order['ID']).first()
-
-                    if order_exists_in_order_table or order_exists_in_fact_table:
-                        self.logger.debug(f"Order {order['ID']} already exists in the database{restaurant_context}. Skipping...")
-                        self.orders_skipped += 1
-                        continue
-
-                    order_details = await services.api_client.fetch_order_details(order['ID'])
-                    if order_details and order_details.get('ErrorCode') == 0:
-                        # Wrap the order processing in a try-catch to handle individual order failures
-                        try:
-                            await self._process_order(order_details, services, restaurant_name)
-                            self.logger.debug(f"Successfully processed order {order['ID']}{restaurant_context}")
-                        except Exception as order_error:
-                            failed_orders += 1
-                            # Rollback session to clean state after error
-                            try:
-                                services.sync_service.session.rollback()
-                            except:
-                                pass  # Ignore rollback errors
-                            self.logger.error(f"Failed to process order {order['ID']}{restaurant_context}: {str(order_error)}")
-                            
-                            # Check if it's a data truncation error specifically
-                            if "String or binary data would be truncated" in str(order_error):
-                                self.logger.warning(f"Data truncation error for order {order['ID']}{restaurant_context} - likely data mapping issue")
-                            elif "ProgrammingError" in str(order_error):
-                                self.logger.warning(f"Database programming error for order {order['ID']}{restaurant_context} - continuing with next order")
-                            
-                            # Continue to next order instead of failing the entire page
-                            continue
-                    else:
-                        self.logger.warning(f"Could not fetch details for order {order['ID']}{restaurant_context} or API error occurred")
-                    
-                    await asyncio.sleep(self.config.sync.delay_between_orders)
-                    
-                except Exception as individual_order_error:
-                    failed_orders += 1
-                    self.logger.error(f"Unexpected error processing order {order.get('ID', 'unknown')}{restaurant_context}: {str(individual_order_error)}")
-                    # Continue to next order
-                    continue
-
-            # Log summary for this page
-            successful_orders = order_count - failed_orders
-            if failed_orders > 0:
-                self.logger.warning(f"Page {current_page}{restaurant_context} completed with {failed_orders} failed orders out of {order_count} total orders")
+            # Get the sync checkpoint
+            checkpoint = services.order_tracker.get_sync_checkpoint(restaurant_id, restaurant_name)
+            if checkpoint:
+                last_order_id, last_order_date = checkpoint
+                self.logger.info(f"Resuming from checkpoint - Last Order ID: {last_order_id}, "
+                               f"Date: {last_order_date}")
             else:
-                self.logger.debug(f"Page {current_page}{restaurant_context} completed successfully with {successful_orders} orders processed")
+                self.logger.info("No checkpoint found - performing full sync")
+            
+            # Track sync statistics
+            stats = {
+                'total_orders_processed': 0,
+                'new_orders_synced': 0,
+                'duplicate_orders_skipped': 0,
+                'pages_processed': 0,
+                'errors': [],
+                'most_recent_order': None
+            }
+            
+            # Track the most recent order for checkpoint update
+            most_recent_order_id = None
+            most_recent_order_date = None
+            
+            page_index = 1
+            consecutive_old_orders = 0
+            stop_threshold = 10  # Stop after finding 10 consecutive old orders
+            
+            while self.state.is_running:
+                if max_pages and page_index > max_pages:
+                    self.logger.info(f"Reached max pages limit ({max_pages})")
+                    break
+                
+                try:
+                    self.logger.info(f"Fetching page {page_index} for {restaurant_name}")
+                    
+                    # Fetch orders from API
+                    response = await services.api_client.get_orders_list(page_index)
+                    
+                    if not response or 'Data' not in response:
+                        self.logger.warning(f"No data in response for page {page_index}")
+                        break
+                    
+                    orders_data = response['Data']
+                    
+                    if not orders_data:
+                        self.logger.info(f"No more orders found on page {page_index}")
+                        break
+                    
+                    stats['pages_processed'] += 1
+                    page_new_orders = 0
+                    page_failed_orders = 0
+                    
+                    # Process orders in the order they appear (latest first)
+                    for order_summary in orders_data:
+                        if not self.state.is_running:
+                            break
+                            
+                        try:
+                            order_id = order_summary['ID']
+                            # Parse order date from the summary
+                            order_date = self._parse_date(order_summary.get('CreationDate'))
+                            
+                            if not order_date:
+                                self.logger.warning(f"Order {order_id} has no creation date")
+                                continue
+                            
+                            # Check if we should process this order
+                            if not services.order_tracker.should_process_order(order_id, order_date, checkpoint):
+                                self.logger.debug(f"Order {order_id} already processed - skipping")
+                                stats['duplicate_orders_skipped'] += 1
+                                consecutive_old_orders += 1
+                                self.orders_skipped += 1
+                                
+                                # Stop if we've seen enough old orders
+                                if consecutive_old_orders >= stop_threshold:
+                                    self.logger.info(f"Found {stop_threshold} consecutive old orders - stopping sync")
+                                    # Update checkpoint before returning
+                                    if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                        services.order_tracker.update_sync_checkpoint(
+                                            restaurant_id=restaurant_id,
+                                            last_order_id=most_recent_order_id,
+                                            last_order_date=most_recent_order_date,
+                                            orders_synced_count=stats['new_orders_synced']
+                                        )
+                                    return stats
+                                continue
+                            
+                            # Also check if order already exists in database (additional safety check)
+                            order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order_id).first()
+                            order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order_id).first()
 
-            return True
-
+                            if order_exists_in_order_table or order_exists_in_fact_table:
+                                self.logger.debug(f"Order {order_id} already exists in database. Skipping...")
+                                self.orders_skipped += 1
+                                stats['duplicate_orders_skipped'] += 1
+                                consecutive_old_orders += 1
+                                if consecutive_old_orders >= stop_threshold:
+                                    self.logger.info(f"Found {stop_threshold} consecutive old orders - stopping sync")
+                                    # Update checkpoint before returning
+                                    if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                        services.order_tracker.update_sync_checkpoint(
+                                            restaurant_id=restaurant_id,
+                                            last_order_id=most_recent_order_id,
+                                            last_order_date=most_recent_order_date,
+                                            orders_synced_count=stats['new_orders_synced']
+                                        )
+                                    return stats
+                                continue
+                            
+                            # Reset counter since we found a new order
+                            consecutive_old_orders = 0
+                            
+                            # Fetch full order details
+                            self.logger.debug(f"Fetching details for order {order_id}")
+                            order_details = await services.api_client.fetch_order_details(order_id)
+                            
+                            if not order_details or order_details.get('ErrorCode') != 0:
+                                self.logger.error(f"Failed to fetch details for order {order_id}")
+                                stats['errors'].append(f"Failed to fetch order {order_id}")
+                                page_failed_orders += 1
+                                continue
+                            
+                            # Process the order (sync + ETL)
+                            try:
+                                await self._process_order(order_details, services, restaurant_name)
+                                stats['new_orders_synced'] += 1
+                                page_new_orders += 1
+                                
+                                # Track most recent order
+                                if most_recent_order_date is None or order_date > most_recent_order_date:
+                                    most_recent_order_id = order_id
+                                    most_recent_order_date = order_date
+                                    stats['most_recent_order'] = {
+                                        'id': order_id,
+                                        'date': order_date
+                                    }
+                                
+                            except Exception as order_error:
+                                page_failed_orders += 1
+                                # Rollback session to clean state after error
+                                try:
+                                    services.sync_service.session.rollback()
+                                except:
+                                    pass  # Ignore rollback errors
+                                self.logger.error(f"Failed to process order {order_id}: {str(order_error)}")
+                                stats['errors'].append(f"Order {order_id}: {str(order_error)}")
+                                
+                                # Check if it's a data truncation error specifically
+                                if "String or binary data would be truncated" in str(order_error):
+                                    self.logger.warning(f"Data truncation error for order {order_id} - likely data mapping issue")
+                                elif "ProgrammingError" in str(order_error):
+                                    self.logger.warning(f"Database programming error for order {order_id} - continuing with next order")
+                                
+                                # Continue to next order instead of failing
+                                continue
+                            
+                            # Add delay between orders
+                            await asyncio.sleep(self.config.sync.delay_between_orders)
+                            
+                        except Exception as e:
+                            self.logger.error(f"Error processing order {order_id}: {str(e)}")
+                            stats['errors'].append(f"Order {order_id}: {str(e)}")
+                            page_failed_orders += 1
+                            continue
+                    
+                    stats['total_orders_processed'] += len(orders_data)
+                    
+                    # Log page summary
+                    if page_failed_orders > 0:
+                        self.logger.warning(f"Page {page_index} completed with {page_failed_orders} failed orders out of {len(orders_data)} total")
+                    else:
+                        self.logger.info(f"Page {page_index} complete - {page_new_orders} new orders synced")
+                    
+                    # If no new orders on this page, we might be approaching the end
+                    if page_new_orders == 0:
+                        self.logger.info("No new orders on this page")
+                    
+                    # Add delay between pages
+                    await asyncio.sleep(self.config.sync.delay_between_pages)
+                    page_index += 1
+                    
+                except Exception as e:
+                    self.logger.error(f"Error processing page {page_index}: {str(e)}")
+                    stats['errors'].append(f"Page {page_index}: {str(e)}")
+                    await asyncio.sleep(self.config.sync.delay_on_error)
+                    page_index += 1
+            
+            # Update checkpoint with most recent order
+            if most_recent_order_id and stats['new_orders_synced'] > 0:
+                services.order_tracker.update_sync_checkpoint(
+                    restaurant_id=restaurant_id,
+                    last_order_id=most_recent_order_id,
+                    last_order_date=most_recent_order_date,
+                    orders_synced_count=stats['new_orders_synced']
+                )
+            
+            return stats
+            
         except Exception as e:
-            self.logger.error(f"Error processing page {current_page}{restaurant_context}: {str(e)}")
-            return False
+            self.logger.error(f"Critical error in sync process: {str(e)}")
+            raise
+
     async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
         """Process orders for a single restaurant"""
         self.logger.info(f"Processing restaurant: {restaurant_user.restaurant_id} - {restaurant_user.company_name}")
-        
-        # Reset counters for this restaurant
-        restaurant_orders_processed = 0
-        restaurant_orders_etl_processed = 0
-        restaurant_orders_skipped = 0
         
         try:
             # Store current counters to calculate restaurant-specific counts later
@@ -331,7 +468,7 @@ class OrderSyncApplication:
             self.logger.debug(f"Retrieved credentials for restaurant {restaurant_user.restaurant_id}")
             
             if not credentials:
-                self.logger.error(f"No credentials found for restaurant {restaurant_user.name}")
+                self.logger.error(f"No credentials found for restaurant {restaurant_user.company_name}")
                 return
             
             # Login with restaurant credentials
@@ -349,33 +486,18 @@ class OrderSyncApplication:
 
             except KeyError as e:
                 self.logger.error(f"Missing credential key: {e}")
-                return None
+                return
 
             except Exception as e:
                 self.logger.error(f"Login error: {e}")
-                return None
+                return
             
-            current_page = services.page_tracker.get_last_page_index(
+            # Process orders using the new order-based tracking approach
+            sync_stats = await self._process_restaurant_orders(
+                services=services,
                 restaurant_id=services.api_client.restaurant_id,
                 restaurant_name=services.api_client.restaurant_name
             )
-            
-            self.logger.debug(f"Starting sync from page {current_page} for restaurant {restaurant_user.restaurant_id}")
-
-            while self.state.is_running:
-                self.logger.debug(f"Processing page {current_page} for {restaurant_user.company_name}")
-                
-                has_more_pages = await self._process_restaurant_page(
-                    current_page, services, restaurant_user.company_name
-                )
-                
-                if not has_more_pages:
-                    self.logger.debug(f"No more pages for restaurant {restaurant_user.restaurant_id}")
-                    break
-                
-                services.page_tracker.update_page_index(services.api_client.restaurant_id, current_page)
-                current_page += 1
-                await asyncio.sleep(self.config.sync.delay_between_pages)
             
             # Calculate restaurant-specific metrics
             restaurant_orders_processed = self.orders_processed - start_orders_processed
@@ -385,7 +507,8 @@ class OrderSyncApplication:
             self.logger.info(f"Restaurant {restaurant_user.company_name} sync complete: "
                             f"processed {restaurant_orders_processed} orders, "
                             f"ETL processed {restaurant_orders_etl_processed} orders, "
-                            f"skipped {restaurant_orders_skipped} orders")
+                            f"skipped {restaurant_orders_skipped} orders, "
+                            f"errors: {len(sync_stats['errors'])}")
 
         except Exception as e:
             self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
