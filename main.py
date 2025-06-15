@@ -278,6 +278,7 @@ class OrderSyncApplication:
             page_index = 1
             consecutive_old_orders = 0
             stop_threshold = 10  # Stop after finding 10 consecutive old orders
+            checkpoint_reached = False  # Track if we've seen the checkpoint order
             
             while self.state.is_running:
                 if max_pages and page_index > max_pages:
@@ -318,48 +319,79 @@ class OrderSyncApplication:
                                 self.logger.warning(f"Order {order_id} has no creation date")
                                 continue
                             
-                            # Check if we should process this order
-                            if not services.order_tracker.should_process_order(order_id, order_date, checkpoint):
-                                self.logger.debug(f"Order {order_id} already processed - skipping")
-                                stats['duplicate_orders_skipped'] += 1
-                                consecutive_old_orders += 1
-                                self.orders_skipped += 1
-                                
-                                # Stop if we've seen enough old orders
-                                if consecutive_old_orders >= stop_threshold:
-                                    self.logger.info(f"Found {stop_threshold} consecutive old orders - stopping sync")
-                                    # Update checkpoint before returning
-                                    if most_recent_order_id and stats['new_orders_synced'] > 0:
-                                        services.order_tracker.update_sync_checkpoint(
-                                            restaurant_id=restaurant_id,
-                                            last_order_id=most_recent_order_id,
-                                            last_order_date=most_recent_order_date,
-                                            orders_synced_count=stats['new_orders_synced']
-                                        )
-                                    return stats
-                                continue
+                            # Check if this is our checkpoint order
+                            if checkpoint and order_id == checkpoint[0]:
+                                self.logger.info(f"Reached checkpoint order {order_id}")
+                                checkpoint_reached = True
                             
-                            # Also check if order already exists in database (additional safety check)
-                            order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order_id).first()
-                            order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order_id).first()
+                            # PRIMARY CHECK 1: Order Tracker Check
+                            if not self.config.sync.skip_duplicate_checks:
+                                # Check if we should process this order
+                                if not services.order_tracker.should_process_order(order_id, order_date, checkpoint):
+                                    self.logger.debug(f"Order {order_id} already processed - skipping")
+                                    stats['duplicate_orders_skipped'] += 1
+                                    self.orders_skipped += 1
+                                    
+                                    # Only count consecutive old orders AFTER reaching checkpoint
+                                    if checkpoint_reached:
+                                        consecutive_old_orders += 1
+                                        self.logger.debug(f"Old order count after checkpoint: {consecutive_old_orders}")
+                                        
+                                        # Stop if we've seen enough old orders after checkpoint
+                                        if consecutive_old_orders >= stop_threshold:
+                                            self.logger.info(f"Found {stop_threshold} consecutive old orders after checkpoint - stopping sync")
+                                            # Update checkpoint before returning
+                                            if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                                services.order_tracker.update_sync_checkpoint(
+                                                    restaurant_id=restaurant_id,
+                                                    last_order_id=most_recent_order_id,
+                                                    last_order_date=most_recent_order_date,
+                                                    orders_synced_count=stats['new_orders_synced']
+                                                )
+                                            return stats
+                                    else:
+                                        self.logger.debug(f"Found old order {order_id} but haven't reached checkpoint yet - continuing")
+                                    continue
+                            else:
+                                self.logger.warning(f"Duplicate checks disabled via config - processing order {order_id} regardless of checkpoint")
+                            
+                            # PRIMARY CHECK 2: Database Check
+                            if not self.config.sync.skip_duplicate_checks:
+                                # Also check if order already exists in database (additional safety check)
+                                order_exists_in_order_table = services.sync_service.session.query(Order).filter(Order.id == order_id).first()
+                                order_exists_in_fact_table = services.sync_service.session.query(FactOrders).filter(FactOrders.order_id == order_id).first()
 
-                            if order_exists_in_order_table or order_exists_in_fact_table:
-                                self.logger.debug(f"Order {order_id} already exists in database. Skipping...")
-                                self.orders_skipped += 1
-                                stats['duplicate_orders_skipped'] += 1
-                                consecutive_old_orders += 1
-                                if consecutive_old_orders >= stop_threshold:
-                                    self.logger.info(f"Found {stop_threshold} consecutive old orders - stopping sync")
-                                    # Update checkpoint before returning
-                                    if most_recent_order_id and stats['new_orders_synced'] > 0:
-                                        services.order_tracker.update_sync_checkpoint(
-                                            restaurant_id=restaurant_id,
-                                            last_order_id=most_recent_order_id,
-                                            last_order_date=most_recent_order_date,
-                                            orders_synced_count=stats['new_orders_synced']
-                                        )
-                                    return stats
-                                continue
+                                if order_exists_in_order_table or order_exists_in_fact_table:
+                                    self.logger.debug(f"Order {order_id} already exists in database. Skipping...")
+                                    self.orders_skipped += 1
+                                    stats['duplicate_orders_skipped'] += 1
+                                    
+                                    # Check if this is our checkpoint order
+                                    if checkpoint and order_id == checkpoint[0]:
+                                        self.logger.info(f"Reached checkpoint order {order_id}")
+                                        checkpoint_reached = True
+                                    
+                                    # Only count consecutive old orders AFTER reaching checkpoint
+                                    if checkpoint_reached:
+                                        consecutive_old_orders += 1
+                                        self.logger.debug(f"Old order count after checkpoint: {consecutive_old_orders}")
+                                        
+                                        if consecutive_old_orders >= stop_threshold:
+                                            self.logger.info(f"Found {stop_threshold} consecutive old orders after checkpoint - stopping sync")
+                                            # Update checkpoint before returning
+                                            if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                                services.order_tracker.update_sync_checkpoint(
+                                                    restaurant_id=restaurant_id,
+                                                    last_order_id=most_recent_order_id,
+                                                    last_order_date=most_recent_order_date,
+                                                    orders_synced_count=stats['new_orders_synced']
+                                                )
+                                            return stats
+                                    else:
+                                        self.logger.debug(f"Found existing order {order_id} but haven't reached checkpoint yet - continuing")
+                                    continue
+                            else:
+                                self.logger.warning(f"Database duplicate checks disabled via config - will attempt to process order {order_id}")
                             
                             # Reset counter since we found a new order
                             consecutive_old_orders = 0
@@ -452,6 +484,11 @@ class OrderSyncApplication:
             
         except Exception as e:
             self.logger.error(f"Critical error in sync process: {str(e)}")
+            # Ensure session is rolled back
+            try:
+                services.sync_service.session.rollback()
+            except:
+                pass
             raise
 
     async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
@@ -512,6 +549,11 @@ class OrderSyncApplication:
 
         except Exception as e:
             self.logger.error(f"Error processing restaurant {restaurant_user.company_name}: {str(e)}")
+            # Rollback session on error
+            try:
+                services.sync_service.session.rollback()
+            except:
+                pass  # Ignore rollback errors
 
     async def initialize(self) -> bool:
         """Initialize application configuration and logging"""
@@ -549,6 +591,14 @@ class OrderSyncApplication:
             return
 
         self.logger.info("Starting order synchronization process...")
+        
+        # Check if duplicate checks are disabled
+        if self.config.sync.skip_duplicate_checks:
+            self.logger.warning("=" * 60)
+            self.logger.warning("WARNING: Duplicate checks are DISABLED in config!")
+            self.logger.warning("Orders will be reprocessed even if they already exist.")
+            self.logger.warning("Secondary fact table checks will still prevent duplicates.")
+            self.logger.warning("=" * 60)
 
         async with self._service_context() as services:
             try:
@@ -613,6 +663,11 @@ class OrderSyncApplication:
 
                     except Exception as e:
                         self.logger.error(f"Error in main sync loop: {str(e)}")
+                        # Rollback the session to clear any failed transactions
+                        try:
+                            services.sync_service.session.rollback()
+                        except:
+                            pass  # Ignore rollback errors
                         await asyncio.sleep(self.config.sync.delay_on_error)
 
             except Exception as e:

@@ -80,6 +80,8 @@ class SyncConfig:
     delay_between_orders: float
     delay_between_pages: float
     delay_on_error: float
+    skip_duplicate_checks: bool = False  # Default to False for safety
+
 @dataclass
 class ScheduleConfig:
     """Configuration for application running schedule"""
@@ -143,7 +145,8 @@ class Config:
                     max_retries=data['sync']['max_retries'],
                     delay_between_orders=data['sync']['delay_between_orders'],
                     delay_between_pages=data['sync']['delay_between_pages'],
-                    delay_on_error=data['sync']['delay_on_error']
+                    delay_on_error=data['sync']['delay_on_error'],
+                    skip_duplicate_checks=os.getenv('SKIP_DUPLICATE_CHECKS', str(data['sync'].get('skip_duplicate_checks', False))).lower() == 'true'
                 ),
                 schedule=ScheduleConfig(
                     start_hour=data['schedule']['start_hour'],

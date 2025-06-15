@@ -100,7 +100,7 @@ def migrate_tracking_system(drop_old_table: bool = False):
                     restaurant_id=restaurant_id,
                     restaurant_name=restaurant_name,
                     last_order_id=0,
-                    last_order_date=datetime.min,
+                    last_order_date=datetime(1900, 1, 1),  # SQL Server safe minimum date
                     last_sync_date=datetime.now(),
                     total_orders_synced=0
                 )
@@ -143,7 +143,7 @@ def create_initial_checkpoint(session, restaurant_id: int, restaurant_name: str)
         restaurant_id=restaurant_id,
         restaurant_name=restaurant_name,
         last_order_id=0,
-        last_order_date=datetime.min,
+        last_order_date=datetime(1900, 1, 1),  # SQL Server safe minimum date
         last_sync_date=datetime.now(),
         total_orders_synced=0
     )

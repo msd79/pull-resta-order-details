@@ -31,12 +31,13 @@ class OrderTrackerServiceV2:
             
         except NoResultFound:
             self.logger.info(f"No sync checkpoint found for {restaurant_name}. This is the first sync.")
-            # Create new tracker entry
+            # Create new tracker entry with SQL Server compatible date
+            # Using 1900-01-01 as a safe minimum date for SQL Server datetime
             new_tracker = OrderSyncTracker(
                 restaurant_id=restaurant_id,
                 restaurant_name=restaurant_name,
                 last_order_id=0,
-                last_order_date=datetime.min,
+                last_order_date=datetime(1900, 1, 1),  # SQL Server safe minimum date
                 last_sync_date=datetime.now(),
                 total_orders_synced=0
             )
@@ -106,7 +107,7 @@ class OrderTrackerServiceV2:
             ).one()
             
             tracker.last_order_id = 0
-            tracker.last_order_date = datetime.min
+            tracker.last_order_date = datetime(1900, 1, 1)  # SQL Server safe minimum date
             tracker.last_sync_date = datetime.now()
             self.session.commit()
             
@@ -114,3 +115,37 @@ class OrderTrackerServiceV2:
             
         except NoResultFound:
             self.logger.warning(f"No tracker found to reset for restaurant_id: {restaurant_id}")
+
+    def set_checkpoint_to_date(self, restaurant_id: int, target_date: datetime) -> None:
+        """
+        Set checkpoint to a specific date for partial resync.
+        Finds the last order before the target date and sets that as checkpoint.
+        """
+        try:
+            from src.database.models import Order
+            
+            # Find the last order before the target date
+            last_order = self.session.query(Order).filter(
+                Order.restaurant_id == restaurant_id,
+                Order.creation_date < target_date
+            ).order_by(Order.creation_date.desc()).first()
+            
+            tracker = self.session.query(OrderSyncTracker).filter_by(
+                restaurant_id=restaurant_id
+            ).one()
+            
+            if last_order:
+                tracker.last_order_id = last_order.id
+                tracker.last_order_date = last_order.creation_date
+                self.logger.info(f"Set checkpoint to order {last_order.id} from {last_order.creation_date}")
+            else:
+                # No orders before this date, reset to minimum
+                tracker.last_order_id = 0
+                tracker.last_order_date = datetime(1900, 1, 1)
+                self.logger.info(f"No orders found before {target_date}, reset to minimum")
+            
+            tracker.last_sync_date = datetime.now()
+            self.session.commit()
+            
+        except NoResultFound:
+            self.logger.error(f"No tracker found for restaurant_id: {restaurant_id}")

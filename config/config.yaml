@@ -1,17 +1,17 @@
 api:
   base_url: "https://api.restajet.com/admin_v1"
-  page_size: 5
+  page_size: 10
   request_timeout: 30
 
 database:
-  server: "192.168.0.11\\SQLEXPRESS"
+  server: "192.168.0.184\\SQLEXPRESS"
   database: "RestaOrders"
   username: "sa"
   driver: "ODBC Driver 17 for SQL Server"
 
 logging:
   filename: "order_sync.log"
-  level: "INFO"
+  level: "DEBUG"
   max_bytes: 10485760  # 10MB
   backup_count: 5
 
@@ -22,12 +22,13 @@ sync:
   delay_between_orders: 0.5
   delay_between_pages: 0.5
   delay_on_error: 5.0
+  skip_duplicate_checks: true  # Set to true to disable primary duplicate checks
 
 schedule:
   # Run from 9:00 AM to 5:00 PM on weekdays
   start_hour: 1
   start_minute: 0
-  end_hour: 17
+  end_hour: 22
   end_minute: 0
   active_days:
     - MONDAY
