@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import signal
 import sys
 from contextlib import asynccontextmanager
@@ -195,10 +195,6 @@ class OrderSyncApplication:
             self.logger.debug(f"Starting OLTP sync for order {order_id}{restaurant_context}")
             order = services.sync_service.sync_order_data(order_data)
             
-            if order.creation_date < datetime(2020, 1, 1):
-                self.logger.debug(f"Order {order.id}{restaurant_context} was created before 01/01/2020. Skipping ETL processing...")
-                self.orders_skipped += 1
-                return False
             self.orders_processed += 1
             # Then do ETL processing
             etl_success = await self._process_etl(order, services)
@@ -240,6 +236,20 @@ class OrderSyncApplication:
             return None
 
         return None
+
+    def _is_order_old(self, order_id: int, order_date: datetime, checkpoint: Optional[Tuple[int, datetime]]) -> bool:
+        """Check if an order is older than or equal to the checkpoint"""
+        if not checkpoint:
+            return False
+        
+        last_order_id, last_order_date = checkpoint
+        return (order_date < last_order_date or 
+                (order_date == last_order_date and order_id <= last_order_id))
+
+    def _should_stop_at_date_boundary(self, order_date: datetime) -> bool:
+        """Check if we've reached the date boundary for stopping"""
+        date_boundary = datetime(2020, 1, 1)
+        return order_date < date_boundary
 
     async def _process_restaurant_orders(self, services: ApplicationServices, 
                                        restaurant_id: int, 
@@ -319,10 +329,27 @@ class OrderSyncApplication:
                                 self.logger.warning(f"Order {order_id} has no creation date")
                                 continue
                             
-                            # Check if this is our checkpoint order
+                            # Check if we've reached the date boundary (orders before 2020-01-01)
+                            if self._should_stop_at_date_boundary(order_date):
+                                self.logger.info(f"Order {order_id} dated {order_date} is before 2020-01-01 boundary - stopping sync")
+                                # Update checkpoint before stopping
+                                if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                    services.order_tracker.update_sync_checkpoint(
+                                        restaurant_id=restaurant_id,
+                                        last_order_id=most_recent_order_id,
+                                        last_order_date=most_recent_order_date,
+                                        orders_synced_count=stats['new_orders_synced']
+                                    )
+                                    self.logger.info(f"Updated checkpoint to order {most_recent_order_id} before stopping at date boundary")
+                                return stats
+                            
+                            # ALWAYS check if this is our checkpoint order (BEFORE duplicate checks)
                             if checkpoint and order_id == checkpoint[0]:
                                 self.logger.info(f"Reached checkpoint order {order_id}")
                                 checkpoint_reached = True
+                            
+                            # Check if this order is old (for tracking purposes)
+                            is_old = self._is_order_old(order_id, order_date, checkpoint)
                             
                             # PRIMARY CHECK 1: Order Tracker Check
                             if not self.config.sync.skip_duplicate_checks:
@@ -366,11 +393,6 @@ class OrderSyncApplication:
                                     self.orders_skipped += 1
                                     stats['duplicate_orders_skipped'] += 1
                                     
-                                    # Check if this is our checkpoint order
-                                    if checkpoint and order_id == checkpoint[0]:
-                                        self.logger.info(f"Reached checkpoint order {order_id}")
-                                        checkpoint_reached = True
-                                    
                                     # Only count consecutive old orders AFTER reaching checkpoint
                                     if checkpoint_reached:
                                         consecutive_old_orders += 1
@@ -393,8 +415,25 @@ class OrderSyncApplication:
                             else:
                                 self.logger.warning(f"Database duplicate checks disabled via config - will attempt to process order {order_id}")
                             
-                            # Reset counter since we found a new order
-                            consecutive_old_orders = 0
+                            # When duplicate checks are disabled, still need to track old orders for stopping
+                            if self.config.sync.skip_duplicate_checks and checkpoint_reached and is_old:
+                                consecutive_old_orders += 1
+                                self.logger.debug(f"Old order after checkpoint (checks disabled): {consecutive_old_orders}")
+                                
+                                if consecutive_old_orders >= stop_threshold:
+                                    self.logger.info(f"Found {stop_threshold} consecutive old orders after checkpoint - stopping sync")
+                                    # Update checkpoint before stopping
+                                    if most_recent_order_id and stats['new_orders_synced'] > 0:
+                                        services.order_tracker.update_sync_checkpoint(
+                                            restaurant_id=restaurant_id,
+                                            last_order_id=most_recent_order_id,
+                                            last_order_date=most_recent_order_date,
+                                            orders_synced_count=stats['new_orders_synced']
+                                        )
+                                    return stats
+                            elif not is_old:
+                                # Reset counter for new orders
+                                consecutive_old_orders = 0
                             
                             # Fetch full order details
                             self.logger.debug(f"Fetching details for order {order_id}")
