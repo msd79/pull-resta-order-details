@@ -54,8 +54,8 @@ class CustomerDimensionService:
                 is_current=True,
                 
                 # Status and preferences
-                is_email_marketing_allowed=customer.is_email_marketing_allowed,
-                is_sms_marketing_allowed=customer.is_sms_marketing_allowed,
+                # is_email_marketing_allowed=customer.is_email_marketing_allowed,
+                # is_sms_marketing_allowed=customer.is_sms_marketing_allowed,
                 
                 # Pre-calculated metrics
                 lifetime_order_count=metrics.get('total_orders', 0),
