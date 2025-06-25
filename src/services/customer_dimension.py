@@ -8,6 +8,14 @@ from src.database.dimentional_models import DimCustomer
 from src.database.models import Customer, Order
 
 class CustomerDimensionService:
+    """
+    Service for managing customer dimensions.
+    
+    Note: While the table structure supports Type 2 SCD with history tracking,
+    we currently maintain only current records (is_current=True) and update
+    them in place. Historical records (is_current=False) are preserved but
+    not actively maintained or created.
+    """
     def __init__(self, session: Session):
         self.session = session
         self.logger = logging.getLogger(__name__)
@@ -150,95 +158,99 @@ class CustomerDimensionService:
             self.logger.error(f"Error calculating customer metrics for ID {customer_id}: {str(e)}", exc_info=True)
             raise
 
+
     def update_customer_dimension(self, customer: Customer, restaurant_key: int) -> None:
-        """Update customer dimension with change tracking (Type 2 SCD)."""
+        """Update customer dimension with simple in-place updates."""
         try:
-            self.logger.info(f"Starting customer dimension update for customer ID: {customer.id}")
+            self.logger.info(f"Updating customer dimension for customer ID: {customer.id}")
             
             # Get current metrics
-            self.logger.debug(f"Retrieving metrics for customer {customer.id}")
             metrics = self.get_customer_metrics(customer.id)
             
-            # Get current customer dimension record
-            self.logger.debug(f"Looking up current dimension record for customer {customer.id}")
-            current_record = self.session.query(DimCustomer)\
-                .filter(
-                    DimCustomer.customer_id == customer.id,
-                    DimCustomer.is_current == True
-                ).first()
+            # Get existing record
+            existing_record = self.session.query(DimCustomer)\
+                .filter(DimCustomer.customer_id == customer.id, DimCustomer.is_current == True).first()
             
-            # Create new dimension record
-            self.logger.debug(f"Transforming customer {customer.id} data to dimension record")
-            new_record = self.transform_customer(customer, metrics, restaurant_key)
+            #  current_record = self.session.query(DimCustomer)\
+            #     .filter(
+            #         DimCustomer.customer_id == customer.id,
+            #         DimCustomer.is_current == True
+            #     ).first()
             
-            if current_record:
-                self.logger.debug(f"Found existing dimension record for customer {customer.id}")
-                # Check if any tracked attributes have changed
-                has_changes = self._has_tracked_changes(current_record, new_record)
-                self.logger.debug(f"Checked for tracked changes: {'changes detected' if has_changes else 'no changes'}")
+            if existing_record:
+                # Update ALL attributes in place
+                existing_record.full_name = customer.full_name
+                existing_record.email = customer.email
+                existing_record.mobile = customer.mobile
+                existing_record.birth_date = customer.birth_date
+                existing_record.age_group = self._calculate_age_group(customer.birth_date)
+                existing_record.is_email_marketing_allowed = customer.is_email_marketing_allowed
+                existing_record.is_sms_marketing_allowed = customer.is_sms_marketing_allowed
                 
-                if has_changes:
-                    # Expire current record
-                    self.logger.debug(f"Expiring current record for customer {customer.id}")
-                    current_record.expiration_date = datetime.now()
-                    current_record.is_current = False
-                    
-                    # Add new record
-                    self.logger.debug(f"Adding new dimension record for customer {customer.id}")
-                    self.session.add(new_record)
-                else:
-                    # Update non-tracked attributes of current record
-                    self.logger.debug(f"Updating non-tracked attributes for customer {customer.id}")
-                    self._update_non_tracked_attributes(current_record, new_record)
+                # Update metrics
+                existing_record.lifetime_order_count = metrics.get('total_orders', 0)
+                existing_record.lifetime_order_value = round(metrics.get('total_spent', 0.0), 2)
+                existing_record.average_order_value = round(metrics.get('avg_order_value', 0.0), 2)
+                existing_record.first_order_date = metrics.get('first_order_date')
+                existing_record.last_order_date = metrics.get('last_order_date')
+                existing_record.customer_segment = self._determine_customer_segment(metrics)
+                existing_record.customer_tenure_days = self._calculate_tenure_days(
+                    metrics.get('first_order_date'),
+                    metrics.get('last_order_date')
+                )
+                
+                self.logger.debug(f"Updated existing dimension record for customer {customer.id}")
             else:
-                # Add first record for this customer
-                self.logger.debug(f"No existing dimension record found, adding first record for customer {customer.id}")
+                # Create new record
+                new_record = self.transform_customer(customer, metrics, restaurant_key)
                 self.session.add(new_record)
+                self.logger.debug(f"Created new dimension record for customer {customer.id}")
             
-            self.logger.debug(f"Committing changes to database for customer {customer.id}")
             self.session.commit()
             self.logger.info(f"Successfully updated customer dimension for customer ID: {customer.id}")
             
         except Exception as e:
-            self.logger.debug(f"Rolling back database transaction due to error")
             self.session.rollback()
-            self.logger.error(f"Error updating customer dimension for ID {customer.id}: {str(e)}", exc_info=True)
+            self.logger.error(f"Error updating customer dimension for ID {customer.id}: {str(e)}")
             raise
-
-    def _has_tracked_changes(self, current: DimCustomer, new: DimCustomer) -> bool:
-        """Check if any tracked attributes have changed (for Type 2 SCD)."""
-        tracked_attributes = [
-            'full_name',
-            'email',
-            'mobile',
-            'birth_date',
-            'is_email_marketing_allowed',
-            'is_sms_marketing_allowed'
-        ]
+    
+    
+    
+    
+    # def _has_tracked_changes(self, current: DimCustomer, new: DimCustomer) -> bool:
+    #     """Check if any tracked attributes have changed (for Type 2 SCD)."""
+    #     tracked_attributes = [
+    #         'full_name',
+    #         'email',
+    #         'mobile',
+    #         'birth_date',
+    #         'is_email_marketing_allowed',
+    #         'is_sms_marketing_allowed'
+    #     ]
         
-        for attr in tracked_attributes:
-            current_val = getattr(current, attr)
-            new_val = getattr(new, attr)
-            if current_val != new_val:
-                self.logger.debug(f"Tracked attribute '{attr}' changed: {current_val} -> {new_val}")
-                return True
+    #     for attr in tracked_attributes:
+    #         current_val = getattr(current, attr)
+    #         new_val = getattr(new, attr)
+    #         if current_val != new_val:
+    #             self.logger.debug(f"Tracked attribute '{attr}' changed: {current_val} -> {new_val}")
+    #             return True
                 
-        return False
+    #     return False
 
-    def _update_non_tracked_attributes(self, current: DimCustomer, new: DimCustomer) -> None:
-        """Update non-tracked attributes (Type 1 changes)."""
-        non_tracked_attributes = [
-            'lifetime_order_count',
-            'lifetime_order_value',
-            'average_order_value',
-            'last_order_date',
-            'customer_segment',
-            'customer_tenure_days'
-        ]
+    # def _update_non_tracked_attributes(self, current: DimCustomer, new: DimCustomer) -> None:
+    #     """Update non-tracked attributes (Type 1 changes)."""
+    #     non_tracked_attributes = [
+    #         'lifetime_order_count',
+    #         'lifetime_order_value',
+    #         'average_order_value',
+    #         'last_order_date',
+    #         'customer_segment',
+    #         'customer_tenure_days'
+    #     ]
         
-        for attr in non_tracked_attributes:
-            old_val = getattr(current, attr)
-            new_val = getattr(new, attr)
-            if old_val != new_val:
-                self.logger.debug(f"Updating non-tracked attribute '{attr}': {old_val} -> {new_val}")
-                setattr(current, attr, new_val)
+    #     for attr in non_tracked_attributes:
+    #         old_val = getattr(current, attr)
+    #         new_val = getattr(new, attr)
+    #         if old_val != new_val:
+    #             self.logger.debug(f"Updating non-tracked attribute '{attr}': {old_val} -> {new_val}")
+    #             setattr(current, attr, new_val)
