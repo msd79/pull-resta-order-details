@@ -46,6 +46,7 @@ class RestaAPI:
         
         # Log credentials at DEBUG level
         self.logger.debug(f"Login credentials - Email: {email}, Password: {password}")
+     
         
         params = {
             "email": email,
@@ -62,6 +63,8 @@ class RestaAPI:
         
         if not self._session:
             self._session = aiohttp.ClientSession()
+
+ 
         
         try:
             async with self._session.post(login_url, params=params, headers=headers) as response:
@@ -77,8 +80,8 @@ class RestaAPI:
 
                     self.session_token = data.get('SessionToken')
                     if not self.session_token:
-                        self.logger.error("Session token not found in response for {email}")
-                        raise Exception("Session token not found in response for {email}")
+                        self.logger.error(f"Session token not found in response for {email}")
+                        raise Exception(f"Session token not found in response for {email}")
                     
                     # Log token at DEBUG level
                     self.logger.debug(f"Session token: {self.session_token}")
