@@ -25,15 +25,6 @@ class Restaurant(Base):
     name = Column(String(255))
     menuid = Column(Integer)
 
-
-class PageIndexTracker(Base):
-    __tablename__ = 'page_index_tracker'
-    
-    restaurant_id = Column(Integer, primary_key=True)
-    restaurant_name = Column(String(255))
-    last_page_index = Column(Integer, nullable=False)
-    last_updated = Column(String(50))
-
 class Customer(Base):
     __tablename__ = 'customers'
     __table_args__ = (
