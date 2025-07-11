@@ -196,7 +196,10 @@ class OrderSyncService:
                     tip=data.get('Tip', 0),
                     used_points=data.get('UsedPoints', 0),
                     total_paid=data.get('TotalPaid', 0),
-                    total_balance=data.get('TotalBalance', 0)
+                    total_balance=data.get('TotalBalance', 0),
+                    review_rating=data.get('ReviewRating'),
+                    review_message=data.get('ReviewMessage')
+                    
                 )
             )
             return order

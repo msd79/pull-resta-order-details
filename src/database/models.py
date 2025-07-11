@@ -127,6 +127,8 @@ class Order(Base):
     total_paid = Column(Float, default=0)
     total_balance = Column(Float, default=0)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
+    review_rating = Column(Integer, nullable=True)  # Add this line
+    review_message = Column(String(4000), nullable=True)  # Add this line
 
 class Payment(Base):
     __tablename__ = 'payments'

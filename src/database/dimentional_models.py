@@ -169,6 +169,8 @@ class FactOrders(Base):
     used_points = Column(Integer)
 
     is_promotion_applied = Column(Boolean, default=False, nullable=False)
+    review_rating = Column(Integer, nullable=True)  # Add this line
+    review_message = Column(String(1000), nullable=True)  # Add this line
 
 class FactPayments(Base):
     __tablename__ = 'fact_payments'
@@ -260,5 +262,8 @@ class FactRestaurantMetrics(Base):
     peak_hour_orders = Column(Integer, default=0)
     peak_hour = Column(Integer)  # 0-23 representing hour of day
     
-    # Create a unique constraint for restaurant and date combination
+    # Review metrics - Add these new fields (without five/one star counts)
+    daily_reviews_count = Column(Integer, default=0)
+    daily_avg_rating = Column(Float, default=0.0)
+    cumulative_avg_rating = Column(Float, default=0.0)
     

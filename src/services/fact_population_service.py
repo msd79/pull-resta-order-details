@@ -44,7 +44,10 @@ class FactPopulationService:
                 total_discount=order.discount,
                 total=order.total,
                 used_points=order.used_points,
-                is_promotion_applied=True if promotion_key is not None else False
+                is_promotion_applied=True if promotion_key is not None else False,
+                review_rating=order.review_rating,  # Add this line
+                review_message=order.review_message 
+
             )
             self.session.add(fact_order)
             self.logger.debug("Flushing session to generate order_key")

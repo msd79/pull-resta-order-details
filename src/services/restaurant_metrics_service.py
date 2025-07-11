@@ -136,7 +136,11 @@ class RestaurantMetricsService:
             'orders_with_promotion': 0,
             'total_discount_amount': 0.0,
             'peak_hour_orders': 0,
-            'peak_hour': None
+            'peak_hour': None,
+            # Add review metrics (simplified)
+            'daily_reviews_count': 0,
+            'daily_avg_rating': 0.0,
+            'cumulative_avg_rating': 0.0
         }
 
     def _get_datetime_key(self, date: datetime) -> Optional[int]:
@@ -163,6 +167,10 @@ class RestaurantMetricsService:
             if not orders:
                 return self._get_empty_metrics()
                 
+            # Calculate review metrics
+            reviewed_orders = [order for order in orders if order.review_rating is not None]
+            review_ratings = [order.review_rating for order in reviewed_orders]
+            
             metrics = {
                 'total_orders': len(orders),
                 'total_revenue': sum(order.total for order in orders),
@@ -177,7 +185,15 @@ class RestaurantMetricsService:
                 
                 'orders_with_promotion': sum(1 for order in orders if order.promotion_id is not None),
                 'total_discount_amount': sum(order.discount for order in orders),
+                
+                # Add review metrics (simplified)
+                'daily_reviews_count': len(reviewed_orders),
+                'daily_avg_rating': sum(review_ratings) / len(review_ratings) if review_ratings else 0.0,
             }
+            
+            # Calculate cumulative average rating
+            cumulative_avg = await self._calculate_cumulative_avg_rating(restaurant_id, date)
+            metrics['cumulative_avg_rating'] = cumulative_avg
             
             # Calculate peak hour metrics
             peak_hour_data = self._calculate_peak_hour(orders)
@@ -192,6 +208,24 @@ class RestaurantMetricsService:
         except Exception as e:
             self.logger.error(f"Error calculating daily metrics: {str(e)}")
             raise
+
+    async def _calculate_cumulative_avg_rating(self, restaurant_id: int, up_to_date: datetime) -> float:
+        """Calculate cumulative average rating for a restaurant up to a specific date."""
+        try:
+            result = self.session.query(
+                func.avg(Order.review_rating)
+            ).filter(
+                Order.restaurant_id == restaurant_id,
+                Order.review_rating.isnot(None),
+                Order.creation_date <= up_to_date
+            ).scalar()
+            
+            return float(result) if result else 0.0
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating cumulative average rating: {str(e)}")
+            return 0.0
+
 
     async def _update_fact_table(self, restaurant_id: int, date: datetime, metrics: dict) -> None:
         restaurant_dim = self.session.query(DimRestaurant)\
