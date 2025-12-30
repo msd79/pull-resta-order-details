@@ -55,7 +55,7 @@ class DatabaseConfig:
    
         server_with_port = f"{server}:{self.port}"
 
-        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.database}?driver={encoded_driver}"
+        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.database}?driver={encoded_driver}&TrustServerCertificate=yes"
 
     @property
     def historical_connection_string(self) -> str:
@@ -69,7 +69,7 @@ class DatabaseConfig:
         encoded_password = quote_plus(self.password) if self.password else ''
         server_with_port = f"{server}:{self.port}"
 
-        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.historical_database}?driver={encoded_driver}"
+        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.historical_database}?driver={encoded_driver}&TrustServerCertificate=yes"
 
     @staticmethod
     def get_available_drivers() -> list:
