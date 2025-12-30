@@ -23,7 +23,7 @@ import argparse
 import asyncio
 from datetime import datetime, timedelta, date as date_type
 from typing import Dict, List, Optional, Tuple
-from sqlalchemy import create_engine, func, text
+from sqlalchemy import create_engine, func, text, Date
 from sqlalchemy.orm import sessionmaker, Session
 import logging
 import sys
@@ -185,7 +185,7 @@ class PromotionSummaryBackfill:
 
         # Query orders grouped by date and promotion
         results = self.session.query(
-            func.cast(Order.creation_date, text('DATE')).label('order_date'),
+            func.cast(Order.creation_date, Date).label('order_date'),
             Order.promotion_id,
             func.count(Order.id).label('order_count'),
             func.sum(Order.total).label('total_revenue'),
@@ -202,7 +202,7 @@ class PromotionSummaryBackfill:
             Order.creation_date >= start_datetime,
             Order.creation_date <= end_datetime
         ).group_by(
-            func.cast(Order.creation_date, text('DATE')),
+            func.cast(Order.creation_date, Date),
             Order.promotion_id
         ).all()
 

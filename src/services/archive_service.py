@@ -220,11 +220,15 @@ class ArchiveService:
                     columns_str = ', '.join(columns)
                     if add_creation_date:
                         # For fact_orders, also capture original creation date
+                        # Prefix columns with 's.' to avoid ambiguity with joined table
+                        prefixed_columns = ', '.join([f's.{col}' for col in columns])
+                        # Also prefix the where clause datetime_key
+                        prefixed_where = where_clause.replace('datetime_key', 's.datetime_key')
                         select_sql = f"""
-                            SELECT {columns_str}, dd.datetime as original_creation_date, GETDATE() as archived_date
+                            SELECT {prefixed_columns}, dd.datetime as original_creation_date, GETDATE() as archived_date
                             FROM {source_table} s
                             JOIN dim_datetime dd ON s.datetime_key = dd.datetime_key
-                            WHERE {where_clause}
+                            WHERE {prefixed_where}
                         """
                         insert_columns = f"{columns_str}, original_creation_date, archived_date"
                     else:
@@ -261,8 +265,8 @@ class ArchiveService:
                             hist_conn.commit()
                             self.logger.debug(f"    Inserted batch {i // batch_size + 1}")
 
-                        # Verify insertion
-                        verify_sql = f"SELECT COUNT(*) FROM {target_table} WHERE archived_date >= DATEADD(minute, -5, GETDATE())"
+                        # Verify insertion (use 60 minute window to account for large inserts)
+                        verify_sql = f"SELECT COUNT(*) FROM {target_table} WHERE archived_date >= DATEADD(minute, -60, GETDATE())"
                         verify_result = hist_conn.execute(text(verify_sql))
                         inserted_count = verify_result.scalar()
 
