@@ -27,11 +27,12 @@ class DatabaseConfig:
     username: str
     driver: str
     port: int = 1433
+    historical_database: str = "RestaOrders_Historical"
 
     @property
     def password(self) -> str:
         return os.getenv('DB_PASSWORD')
-    
+
     @property
     def passphrase(self) -> str:
         return os.getenv('DB_PASSPHRASE')
@@ -53,8 +54,22 @@ class DatabaseConfig:
         #return f"mssql+pyodbc://{self.username}:{encoded_password}@{server}/{self.database}?driver={encoded_driver}"
    
         server_with_port = f"{server}:{self.port}"
-        
+
         return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.database}?driver={encoded_driver}"
+
+    @property
+    def historical_connection_string(self) -> str:
+        """
+        Creates a SQLAlchemy connection string for the historical/archive database.
+        """
+        from urllib.parse import quote_plus
+
+        server = self.server.replace('\\', '\\\\')
+        encoded_driver = quote_plus(self.driver)
+        encoded_password = quote_plus(self.password) if self.password else ''
+        server_with_port = f"{server}:{self.port}"
+
+        return f"mssql+pyodbc://{self.username}:{encoded_password}@{server_with_port}/{self.historical_database}?driver={encoded_driver}"
 
     @staticmethod
     def get_available_drivers() -> list:

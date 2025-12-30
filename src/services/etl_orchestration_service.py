@@ -9,6 +9,7 @@ import time
 from src.services.order_processing_tracker import OrderProcessingTracker
 from src.services.restaurant_metrics_service import RestaurantMetricsService
 from src.services.fact_population_service import FactPopulationService
+from src.services.promotion_summary_service import PromotionSummaryService
 from src.services.payment_method_dimension import PaymentMethodDimensionService
 from src.services.promotion_dimension import PromotionDimensionService
 from src.services.restaurant_dimension import RestaurantDimensionService
@@ -30,6 +31,7 @@ class ETLOrchestrator:
         self.payment_method_service = PaymentMethodDimensionService(session)
         self.fact_service = FactPopulationService(session)
         self.restaurant_metrics_service = RestaurantMetricsService(session)
+        self.promotion_summary_service = PromotionSummaryService(session)
         self.order_tracker = OrderProcessingTracker(session)
 
     async def initialize_dimensions(self):
@@ -189,6 +191,13 @@ class ETLOrchestrator:
             await self.restaurant_metrics_service.update_daily_metrics(
                 restaurant_id=order.restaurant_id,
                 date=order.creation_date
+            )
+
+            # 9. Update promotion summary
+            self.logger.debug(f"Updating promotion summary for order_id={order.id}")
+            await self.promotion_summary_service.update_summary_for_order(
+                order=order,
+                restaurant_key=restaurant_key
             )
 
             # Commit changes

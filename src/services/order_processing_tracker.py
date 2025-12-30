@@ -12,7 +12,8 @@ class OrderProcessingTracker:
         'RESTAURANT_METRICS': 'restaurant_metrics',
         'CUSTOMER_METRICS': 'customer_metrics',
         'ORDERS': 'orders',
-        'PAYMENTS': 'payments'
+        'PAYMENTS': 'payments',
+        'PROMOTION_SUMMARY': 'promotion_summary'
     }
 
     def __init__(self, session: Session):

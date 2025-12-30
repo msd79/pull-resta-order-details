@@ -266,4 +266,50 @@ class FactRestaurantMetrics(Base):
     daily_reviews_count = Column(Integer, default=0)
     daily_avg_rating = Column(Float, default=0.0)
     cumulative_avg_rating = Column(Float, default=0.0)
-    
+
+
+class FactDailyPromotionSummary(Base):
+    """
+    Pre-aggregated daily summary for promotion analysis.
+    Enables fast Power BI queries by date range and promotion filter.
+
+    - promotion_key = NULL represents orders WITHOUT any promotion
+    - Each row is a unique combination of restaurant + date + promotion
+    """
+    __tablename__ = 'fact_daily_promotion_summary'
+    __table_args__ = (
+        UniqueConstraint('restaurant_key', 'date', 'promotion_key',
+                         name='unique_restaurant_date_promotion'),
+        Index('idx_fact_promo_summary_date', 'date'),
+        Index('idx_fact_promo_summary_restaurant_date', 'restaurant_key', 'date'),
+        Index('idx_fact_promo_summary_promotion', 'promotion_key'),
+    )
+
+    summary_key = Column(Integer, primary_key=True)
+    restaurant_key = Column(Integer, ForeignKey('dim_restaurant.restaurant_key'), nullable=False)
+    date = Column(Date, nullable=False)
+
+    # NULL promotion_key = orders without any promotion
+    promotion_key = Column(Integer, ForeignKey('dim_promotion.promotion_key'), nullable=True)
+
+    # Order metrics
+    order_count = Column(Integer, default=0, nullable=False)
+    total_revenue = Column(Float, default=0.0, nullable=False)
+    avg_order_value = Column(Float, default=0.0, nullable=False)
+    total_discount_given = Column(Float, default=0.0, nullable=False)
+
+    # Sub-totals (before discounts/fees)
+    total_sub_total = Column(Float, default=0.0, nullable=False)
+
+    # Customer metrics
+    unique_customers = Column(Integer, default=0, nullable=False)
+    new_customers = Column(Integer, default=0, nullable=False)      # First order ever
+    repeat_customers = Column(Integer, default=0, nullable=False)   # Had previous orders
+
+    # Order type breakdown
+    delivery_orders = Column(Integer, default=0, nullable=False)
+    pickup_orders = Column(Integer, default=0, nullable=False)
+
+    # Average basket analysis
+    min_order_value = Column(Float, nullable=True)
+    max_order_value = Column(Float, nullable=True)
