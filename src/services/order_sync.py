@@ -35,7 +35,13 @@ class OrderSyncService:
             
             # Sync all related entities
             restaurant = self._sync_restaurant(data['Restaurant'])
-            customer = self._sync_customer(data['Customer'],data['Restaurant'], data['NumberOfOrders'])
+
+            # Handle customer - may be None for POS/walk-in orders
+            customer = None
+            if data.get('Customer') is not None:
+                customer = self._sync_customer(data['Customer'], data['Restaurant'], data['NumberOfOrders'])
+            else:
+                self.logger.info(f"Order {data['ID']} has no customer data (likely POS/walk-in order)")
             
             # Handle promotion if present
             promotion_id = None
@@ -166,8 +172,8 @@ class OrderSyncService:
             self.logger.error(f"Error syncing address: {str(e)}")
             raise
 
-    def _sync_order(self, data: dict, restaurant: Restaurant, 
-                   customer: Customer, address: Optional[CustomerAddress],
+    def _sync_order(self, data: dict, restaurant: Restaurant,
+                   customer: Optional[Customer], address: Optional[CustomerAddress],
                    promotion_id: Optional[int]) -> Order:
         """Sync order data to database."""
         try:
@@ -175,7 +181,7 @@ class OrderSyncService:
                 Order(
                     id=data['ID'],
                     restaurant_id=restaurant.id,
-                    customer_id=customer.id,
+                    customer_id=customer.id if customer else None,
                     customer_address_id=address.id if address else None,
                     delivery_type=data['DeliveryType'],
                     order_method=data['OrderMethod'],
