@@ -99,6 +99,10 @@ class Order(Base):
     Index('idx_orders_restaurant_date', 'restaurant_id', 'creation_date'),
     # For payment status tracking
     Index('idx_orders_payment_status', 'restaurant_id', 'payment_status'),
+    # Supports the per-customer lifetime metric lookup in CustomerDimensionService,
+    # which runs for every order processed
+    Index('idx_orders_customer', 'customer_id',
+          mssql_include=['total', 'creation_date']),
     )
 
     id = Column(Integer, primary_key=True)

@@ -1,5 +1,5 @@
 # File location: src/database/dimentional_models.py
-from sqlalchemy import CheckConstraint, Column, Date, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, Date, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, SmallInteger, UniqueConstraint, text
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -46,6 +46,10 @@ class DimCustomer(Base):
         Index('idx_dim_customer_current', 'customer_id', 'is_current'),
         # Restaurant-specific customer segment analysis
         Index('idx_dim_customer_restaurant_segment', 'restaurant_key', 'customer_segment'),
+        # A customer may only have one current row. Enforced in the database so a
+        # regression cannot quietly duplicate customers again.
+        Index('uq_dim_customer_one_current', 'customer_id',
+              unique=True, mssql_where=text('is_current = 1')),
     )
     
     customer_key = Column(Integer, primary_key=True)  # Surrogate key

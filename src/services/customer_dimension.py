@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 import logging
 from src.database.dimentional_models import DimCustomer
 from src.database.models import Customer, Order
@@ -10,15 +10,23 @@ from src.database.models import Customer, Order
 class CustomerDimensionService:
     """
     Service for managing customer dimensions.
-    
+
     Note: While the table structure supports Type 2 SCD with history tracking,
     we currently maintain only current records (is_current=True) and update
     them in place. Historical records (is_current=False) are preserved but
     not actively maintained or created.
+
+    Lifetime metrics are calculated from both the live orders table and the
+    archived orders in the historical database. The archive job removes orders
+    older than the retention period from the live table, so live orders alone
+    no longer represent a customer's full history.
     """
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, historical_database: Optional[str] = None):
         self.session = session
         self.logger = logging.getLogger(__name__)
+        self._historical_database = historical_database or self._resolve_historical_database()
+        # None = not probed yet, False = archive unreachable (stop retrying)
+        self._archive_reachable: Optional[bool] = None
 
     def transform_customer(self, customer: Customer, metrics: Dict[str, Any], restaurant_key: int) -> DimCustomer:
         """Transform a Customer record into a DimCustomer record."""
@@ -122,12 +130,71 @@ class CustomerDimensionService:
         self.logger.debug(f"Calculated tenure from {first_order_date} to {end_date}: {tenure_days} days")
         return tenure_days
 
+    def _resolve_historical_database(self) -> Optional[str]:
+        """Read the archive database name from config, if it can be loaded."""
+        try:
+            from src.config.settings import Config
+            return Config.load().database.historical_database
+        except Exception as e:
+            self.logger.warning(
+                f"Could not resolve the historical database name; archived orders "
+                f"will be excluded from lifetime metrics: {str(e)}"
+            )
+            return None
+
+    def _get_archived_metrics(self, customer_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Aggregate the customer's archived orders from the historical database.
+
+        Returns None when the archive cannot be read, which callers must treat as
+        'unknown' rather than 'no archived orders' - otherwise a customer's history
+        would be silently truncated to the retention window.
+        """
+        if not self._historical_database or self._archive_reachable is False:
+            return None
+
+        try:
+            # Run inside a savepoint: this sits in the middle of order processing,
+            # so a failure here must not discard the caller's pending work.
+            with self.session.begin_nested():
+                row = self.session.execute(
+                    text(
+                        f"SELECT COUNT(*), SUM(total), MIN(creation_date), MAX(creation_date) "
+                        f"FROM [{self._historical_database}].[dbo].[orders_archive] "
+                        f"WHERE customer_id = :customer_id"
+                    ),
+                    {'customer_id': customer_id}
+                ).first()
+
+            self._archive_reachable = True
+            return {
+                'total_orders': row[0] or 0,
+                'total_spent': float(row[1]) if row[1] is not None else 0.0,
+                'first_order_date': row[2],
+                'last_order_date': row[3]
+            }
+        except Exception as e:
+            # Probe once and stop retrying, so an unreachable archive costs one
+            # failed query per run rather than one per order.
+            self._archive_reachable = False
+            self.logger.warning(
+                f"Archived orders unavailable for customer {customer_id}; lifetime "
+                f"metrics will cover retained orders only: {str(e)}"
+            )
+            return None
+
     def get_customer_metrics(self, customer_id: int) -> Dict[str, Any]:
-        """Calculate customer metrics from order history."""
+        """
+        Calculate customer metrics from order history.
+
+        Covers both the live orders table and the archived orders, so the figures
+        stay true to the customer's full history rather than only the orders the
+        archive job has left in place.
+        """
         try:
             self.logger.info(f"Retrieving order metrics for customer ID: {customer_id}")
             self.logger.debug(f"Executing query to calculate metrics for customer {customer_id}")
-            
+
             metrics = self.session.query(
                 func.count(Order.id).label('total_orders'),
                 func.sum(Order.total).label('total_spent'),
@@ -136,24 +203,40 @@ class CustomerDimensionService:
             ).filter(
                 Order.customer_id == customer_id
             ).first()
-            
+
             result = {
                 'total_orders': metrics[0] or 0,
                 'total_spent': metrics[1] or 0.0,
                 'first_order_date': metrics[2],
                 'last_order_date': metrics[3]
             }
-            
+
+            # Fold in orders the archive job has moved out of the live table
+            archived = self._get_archived_metrics(customer_id)
+            result['archive_included'] = archived is not None
+            if archived and archived['total_orders'] > 0:
+                self.logger.debug(
+                    f"Customer {customer_id} has {archived['total_orders']} archived orders"
+                )
+                result['total_orders'] += archived['total_orders']
+                result['total_spent'] += archived['total_spent']
+
+                # creation_date is nullable, so either side may be missing
+                first_dates = [d for d in (result['first_order_date'], archived['first_order_date']) if d]
+                last_dates = [d for d in (result['last_order_date'], archived['last_order_date']) if d]
+                result['first_order_date'] = min(first_dates) if first_dates else None
+                result['last_order_date'] = max(last_dates) if last_dates else None
+
             # Calculate average order value
             if result['total_orders'] > 0:
                 result['avg_order_value'] = result['total_spent'] / result['total_orders']
             else:
                 result['avg_order_value'] = 0.0
-            
+
             self.logger.debug(f"Customer {customer_id} metrics: {result}")
             self.logger.info(f"Successfully retrieved metrics for customer ID: {customer_id}")
             return result
-            
+
         except Exception as e:
             self.logger.error(f"Error calculating customer metrics for ID {customer_id}: {str(e)}", exc_info=True)
             raise
@@ -186,19 +269,32 @@ class CustomerDimensionService:
                 existing_record.age_group = self._calculate_age_group(customer.birth_date)
                 existing_record.is_email_marketing_allowed = customer.is_email_marketing_allowed
                 existing_record.is_sms_marketing_allowed = customer.is_sms_marketing_allowed
-                
-                # Update metrics
-                existing_record.lifetime_order_count = metrics.get('total_orders', 0)
-                existing_record.lifetime_order_value = round(metrics.get('total_spent', 0.0), 2)
-                existing_record.average_order_value = round(metrics.get('avg_order_value', 0.0), 2)
-                existing_record.first_order_date = metrics.get('first_order_date')
-                existing_record.last_order_date = metrics.get('last_order_date')
-                existing_record.customer_segment = self._determine_customer_segment(metrics)
-                existing_record.customer_tenure_days = self._calculate_tenure_days(
-                    metrics.get('first_order_date'),
-                    metrics.get('last_order_date')
-                )
-                
+
+                # Update metrics.
+                # An order count can only ever grow, so a drop means we are working
+                # from an incomplete picture - almost always the archive being
+                # unreadable. Keep the stored figures rather than writing away
+                # history we cannot reconstruct from this database alone.
+                new_order_count = metrics.get('total_orders', 0)
+                stored_order_count = existing_record.lifetime_order_count or 0
+                if not metrics.get('archive_included') and new_order_count < stored_order_count:
+                    self.logger.warning(
+                        f"Skipping metric update for customer {customer.id}: recalculated "
+                        f"order count ({new_order_count}) is below the stored count "
+                        f"({stored_order_count}) and archived orders could not be read"
+                    )
+                else:
+                    existing_record.lifetime_order_count = new_order_count
+                    existing_record.lifetime_order_value = round(metrics.get('total_spent', 0.0), 2)
+                    existing_record.average_order_value = round(metrics.get('avg_order_value', 0.0), 2)
+                    existing_record.first_order_date = metrics.get('first_order_date')
+                    existing_record.last_order_date = metrics.get('last_order_date')
+                    existing_record.customer_segment = self._determine_customer_segment(metrics)
+                    existing_record.customer_tenure_days = self._calculate_tenure_days(
+                        metrics.get('first_order_date'),
+                        metrics.get('last_order_date')
+                    )
+
                 self.logger.debug(f"Updated existing dimension record for customer {customer.id}")
             else:
                 # Create new record

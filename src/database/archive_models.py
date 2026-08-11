@@ -139,6 +139,9 @@ class OrdersArchive(ArchiveBase):
     __table_args__ = (
         Index('idx_orders_archive_restaurant_date', 'restaurant_id', 'creation_date'),
         Index('idx_orders_archive_archived', 'archived_date'),
+        # Supports the lifetime metric lookup in CustomerDimensionService
+        Index('idx_orders_archive_customer', 'customer_id',
+              mssql_include=['total', 'creation_date']),
     )
 
     id = Column(Integer, primary_key=True)
