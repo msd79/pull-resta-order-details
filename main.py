@@ -17,6 +17,7 @@ from src.services.credential_manager import CredentialManagerService
 from src.services.order_sync import OrderSyncService
 # Replace page tracker with order tracker
 from src.services.order_tracker_v2 import OrderTrackerServiceV2
+from src.services.review_backfill_service import ReviewBackfillService
 from src.services.schedule_manager import ScheduleManager
 from src.utils.logging_config import setup_logging
 from src.utils.retry import retry_with_backoff
@@ -58,6 +59,9 @@ class OrderSyncApplication:
         # Add counters for summary logging
         self.orders_processed = 0
         self.orders_etl_processed = 0
+        # Date the daily review backfill last completed (in-memory; a restart
+        # re-runs it, which is harmless - unreviewed orders are just re-checked)
+        self._last_review_backfill_date = None
         self.orders_skipped = 0
 
     def _setup_signal_handlers(self):
@@ -530,7 +534,8 @@ class OrderSyncApplication:
                 pass
             raise
 
-    async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices):
+    async def _process_restaurant(self, restaurant_user: User, services: ApplicationServices,
+                                  run_review_backfill: bool = False):
         """Process orders for a single restaurant"""
         self.logger.info(f"Processing restaurant: {restaurant_user.restaurant_id} - {restaurant_user.company_name}")
         
@@ -574,7 +579,28 @@ class OrderSyncApplication:
                 restaurant_id=services.api_client.restaurant_id,
                 restaurant_name=services.api_client.restaurant_name
             )
-            
+
+            # Once a day, re-check recent unreviewed orders for late-arriving
+            # reviews while we are still logged in for this restaurant
+            if run_review_backfill:
+                try:
+                    backfill_service = ReviewBackfillService(
+                        session=services.sync_service.session,
+                        api_client=services.api_client,
+                        config=self.config
+                    )
+                    await backfill_service.run_for_restaurant(
+                        restaurant_id=services.api_client.restaurant_id,
+                        restaurant_name=services.api_client.restaurant_name
+                    )
+                except Exception as e:
+                    self.logger.error(f"Review backfill failed for "
+                                      f"{restaurant_user.company_name}: {str(e)}")
+                    try:
+                        services.sync_service.session.rollback()
+                    except:
+                        pass
+
             # Calculate restaurant-specific metrics
             restaurant_orders_processed = self.orders_processed - start_orders_processed
             restaurant_orders_etl_processed = self.orders_etl_processed - start_orders_etl_processed
@@ -677,14 +703,29 @@ class OrderSyncApplication:
                         restaurant_users = services.credential_manager.list_credentials()
                         self.logger.info(f"Found {len(restaurant_users)} restaurants to process")
                         
+                        # Decide whether this cycle should also run the daily review backfill
+                        now = datetime.now()
+                        run_review_backfill = (
+                            self.config.review_backfill.enabled
+                            and now.hour >= self.config.review_backfill.run_hour
+                            and self._last_review_backfill_date != now.date()
+                        )
+                        if run_review_backfill:
+                            self.logger.info("Daily review backfill will run during this cycle")
+
                         for restaurant_user in restaurant_users:
                             if not self.state.is_running:
                                 break
-                            
+
                             if not services.schedule_manager.is_within_schedule():
                                 break
-                                
-                            await self._process_restaurant(restaurant_user, services)
+
+                            await self._process_restaurant(restaurant_user, services,
+                                                           run_review_backfill=run_review_backfill)
+                        else:
+                            # Loop completed without interruption - mark today's backfill done
+                            if run_review_backfill:
+                                self._last_review_backfill_date = now.date()
 
                         # Calculate cycle statistics
                         cycle_orders = self.orders_processed - cycle_start_orders

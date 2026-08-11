@@ -98,6 +98,13 @@ class SyncConfig:
     skip_duplicate_checks: bool = False  # Default to False for safety
 
 @dataclass
+class ReviewBackfillConfig:
+    """Configuration for the daily review backfill job"""
+    enabled: bool = True
+    lookback_days: int = 3
+    run_hour: int = 5
+
+@dataclass
 class ScheduleConfig:
     """Configuration for application running schedule"""
     start_hour: int
@@ -129,6 +136,7 @@ class Config:
     logging: LoggingConfig
     sync: SyncConfig
     schedule: ScheduleConfig  # New field
+    review_backfill: ReviewBackfillConfig
    
     # ... (existing properties remain the same)
     
@@ -169,7 +177,8 @@ class Config:
                     end_hour=data['schedule']['end_hour'],
                     end_minute=data['schedule']['end_minute'],
                     active_days=data['schedule']['active_days']
-                )
+                ),
+                review_backfill=ReviewBackfillConfig(**data.get('review_backfill', {}))
             )
         except Exception as e:
             logger.error(f"Error loading config: {str(e)}")

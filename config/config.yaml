@@ -24,6 +24,12 @@ sync:
   delay_on_error: 5.0
   skip_duplicate_checks: false  # Set to true to disable primary duplicate checks
 
+review_backfill:
+  # Re-check recent unreviewed orders once a day for late-arriving reviews
+  enabled: true
+  lookback_days: 3   # re-check orders from the last N days
+  run_hour: 5        # run on the first sync cycle after this hour (container local time)
+
 schedule:
   # Run from 9:00 AM to 5:00 PM on weekdays
   start_hour: 22
